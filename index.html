@@ -214,31 +214,42 @@
             </div>
         </section>
 
-        <section id="page3" class="page-section hidden animate-fade-in no-print">
-            <div class="max-w-4xl mx-auto">
-                <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center">
-                    <i class="fa-solid fa-gear mr-3 text-corporate"></i> ตั้งค่าระบบ
-                </h2>
-                
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-md mb-6">
-                    <h3 class="text-lg font-bold text-slate-700 mb-4 flex items-center">
-                        <i class="fa-solid fa-qrcode mr-2 text-safety"></i> จัดการจุดตรวจ (QR Code)
-                    </h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-slate-600" id="table-qrs">
-                            <thead class="bg-slate-50 text-slate-700">
-                                <tr>
-                                    <th class="p-3 border-b">รหัส</th>
-                                    <th class="p-3 border-b">ชื่อจุดตรวจ</th>
-                                    <th class="p-3 border-b">ประเภท</th>
-                                    <th class="p-3 border-b text-center">จัดการ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="qr-list-body">
-                                </tbody>
-                        </table>
-                    </div>
-                </div>
+<section id="page3" class="page-section hidden animate-fade-in no-print p-4">
+    <h2 class="text-2xl font-bold text-slate-800 mb-6">ตั้งค่าระบบ (Admin Only)</h2>
+
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-md mb-6">
+        <h3 class="font-bold text-lg mb-4 text-slate-700">จัดการ QR Code</h3>
+        <div class="flex gap-2 mb-4">
+            <input type="text" id="new-qr-code" placeholder="รหัส (เช่น GT-0002)" class="border p-2 rounded w-1/3">
+            <input type="text" id="new-qr-name" placeholder="ชื่อจุดตรวจ" class="border p-2 rounded w-1/3">
+            <button onclick="addQR()" class="bg-emerald-600 text-white px-4 py-2 rounded">เพิ่ม</button>
+        </div>
+        <table class="w-full text-sm">
+            <tbody id="qr-list-body"></tbody>
+        </table>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-md mb-6">
+        <h3 class="font-bold text-lg mb-4 text-slate-700">คำถาม Stock Room</h3>
+        <div class="flex gap-2 mb-4">
+            <input type="text" id="new-question" placeholder="พิมพ์คำถามใหม่..." class="border p-2 rounded flex-grow">
+            <button onclick="addQuestion()" class="bg-blue-600 text-white px-4 py-2 rounded">เพิ่ม</button>
+        </div>
+        <ul id="question-list" class="list-disc ml-5"></ul>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-md">
+        <h3 class="font-bold text-lg mb-4 text-slate-700">จัดการผู้ใช้งาน</h3>
+        <div class="flex gap-2 mb-4">
+            <input type="text" id="new-user" placeholder="Username" class="border p-2 rounded w-1/3">
+            <input type="password" id="new-pass" placeholder="Password" class="border p-2 rounded w-1/3">
+            <button onclick="addUser()" class="bg-slate-700 text-white px-4 py-2 rounded">เพิ่ม</button>
+        </div>
+        <table class="w-full text-sm">
+            <tbody id="user-list-body"></tbody>
+        </table>
+    </div>
+</section>
 
                 <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-md">
                     <h3 class="text-lg font-bold text-slate-700 mb-4 flex items-center">
@@ -744,6 +755,56 @@
             document.body.removeChild(link);
             showCustomAlert(`ดาวน์โหลดไฟล์ Excel (.csv) สำเร็จ!`, "success");
         }
+        // --- ฟังก์ชันจัดการ QR Code ---
+function addQR() {
+    let code = document.getElementById('new-qr-code').value;
+    let name = document.getElementById('new-qr-name').value;
+    if(code && name) {
+        configQRs.push({ code: code, name: name, type: 'stock_room' });
+        renderSettings();
+    }
+}
+function deleteQR(idx) { configQRs.splice(idx, 1); renderSettings(); }
+
+// --- ฟังก์ชันจัดการคำถาม ---
+function addQuestion() {
+    let q = document.getElementById('new-question').value;
+    if(q) {
+        configStockRoomQuestions.push(q);
+        renderSettings();
+    }
+}
+function deleteQuestion(idx) { configStockRoomQuestions.splice(idx, 1); renderSettings(); }
+
+// --- ฟังก์ชันจัดการ User ---
+function addUser() {
+    let u = document.getElementById('new-user').value;
+    let p = document.getElementById('new-pass').value;
+    if(u && p) {
+        configUsers.push({ username: u, password: p, role: 'user' });
+        renderSettings();
+        // **สำคัญ:** อย่าลืมเรียกใช้ fetchGAS('saveUsers', configUsers) ที่นี่เพื่อให้ข้อมูลบันทึกลง Sheet
+    }
+}
+function deleteUser(idx) { configUsers.splice(idx, 1); renderSettings(); }
+
+// --- ฟังก์ชัน Render หน้าจอ ---
+function renderSettings() {
+    // Render QR
+    let qrBody = document.getElementById('qr-list-body');
+    qrBody.innerHTML = configQRs.map((q, i) => `<tr><td>${q.code}</td><td>${q.name}</td><td><button onclick="deleteQR(${i})" class="text-red-500">ลบ</button></td></tr>`).join('');
+    
+    // Render Questions
+    let qBody = document.getElementById('question-list');
+    qBody.innerHTML = configStockRoomQuestions.map((q, i) => `<li>${q} <button onclick="deleteQuestion(${i})" class="text-red-500 ml-2">ลบ</button></li>`).join('');
+    
+    // Render Users
+    let uBody = document.getElementById('user-list-body');
+    uBody.innerHTML = configUsers.map((u, i) => `<tr><td>${u.username}</td><td><button onclick="deleteUser(${i})" class="text-red-500">ลบ</button></td></tr>`).join('');
+}
+
+// เรียกใช้ทุกครั้งที่กดเข้าหน้า Page 3
+// ในฟังก์ชัน navigateTo(pageId) ให้เพิ่ม: if(pageId === 'page3') renderSettings();
 
         // --- CUSTOM UI MODALS ---
         function showCustomAlert(message, type = "info", callback = null) {
