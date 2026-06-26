@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDS CL : QR SAFETY PATROL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+        body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
+        .bg-corporate { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+        .text-safety { color: #f97316; }
+        .bg-safety { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-hover { transition: all 0.3s ease; }
+        .btn-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .btn-hover:active { transform: translateY(0); box-shadow: none; }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { border-color: #f97316; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); transform: translateY(-3px); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        @media print { .no-print { display: none !important; } .print-only { display: block !important; } body { background: white; } }
+        /* สไตล์หน้าโหลดจอ Loading */
+        #global-loader { backdrop-filter: blur(4px); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <header class="bg-corporate text-white shadow-lg sticky top-0 z-40 no-print">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer btn-hover" onclick="attemptNavigate('page1')">
+                <i class="fa-solid mt-1">🛡️</i>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wider text-amber-400 drop-shadow-md">CDS CL</h1>
+                    <p class="text-xs text-slate-300">QR SAFETY PATROL</p>
+                </div>
+            </div>
+            <nav class="flex space-x-1 bg-slate-800/50 p-1 rounded-lg text-sm backdrop-blur-sm border border-slate-700">
+                <button onclick="attemptNavigate('page1')" id="nav-page1" class="px-4 py-2 rounded-md font-medium transition-all duration-300 bg-slate-700 text-white shadow-sm"><i class="fa-solid fa-qrcode mr-1"></i> ตรวจพื้นที่</button>
+                <button onclick="attemptNavigate('page2')" id="nav-page2" class="px-4 py-2 rounded-md font-medium transition-all duration-300 text-slate-300 hover:text-white hover:bg-slate-700/50"><i class="fa-solid fa-chart-line mr-1"></i> แดชบอร์ด</button>
+                <button onclick="attemptNavigate('page3')" id="nav-page3" class="px-4 py-2 rounded-md font-medium transition-all duration-300 text-slate-300 hover:text-white hover:bg-slate-700/50"><i class="fa-solid fa-gear mr-1"></i> ตั้งค่า</button>
+            </nav>
+            <div id="user-status" class="hidden text-xs text-slate-300 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 items-center space-x-2 cursor-pointer hover:bg-slate-700" onclick="logout()">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                <span id="status-text">Admin</span> <i class="fa-solid fa-right-from-bracket ml-1 text-[10px]"></i>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6">
+        
+        <section id="page1" class="page-section animate-fade-in">
+            <div class="max-w-2xl mx-auto text-center mb-8">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">ระบบลงบันทึกการตรวจพื้นที่ความปลอดภัย</h2>
+                <p class="text-slate-500 text-sm" id="page1-subtitle">กรุณาเลือกประเภทพื้นที่ สแกนคิวอาร์โค้ด และกรอกข้อมูลให้ครบถ้วน</p>
+            </div>
+
+            <div id="step1-select-type" class="max-w-2xl mx-auto bg-white rounded-xl shadow-md border border-slate-200 p-6 mb-6">
+                <label class="block text-sm font-semibold text-slate-700 mb-3">1. เลือกประเภทการตรวจพื้นที่</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="selectPatrolType('guard_tour')" class="card-hover flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 text-slate-600 bg-slate-50">
+                        <i class="fa-solid fa-user-shield text-4xl mb-3 text-slate-400 transition-colors duration-300"></i>
+                        <span class="font-bold text-lg">ตรวจพื้นที่ Guard Tour</span>
+                    </button>
+                    <button onclick="selectPatrolType('stock_room')" class="card-hover flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 text-slate-600 bg-slate-50">
+                        <i class="fa-solid fa-boxes-stacked text-4xl mb-3 text-slate-400 transition-colors duration-300"></i>
+                        <span class="font-bold text-lg">ตรวจพื้นที่ Stock Room</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="step2-scan-qr" class="hidden animate-fade-in max-w-2xl mx-auto bg-white rounded-xl shadow-md border border-slate-200 p-6 mb-6">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
+                    <h3 class="text-lg font-bold text-slate-800" id="scan-title">2. ตรวจสอบรหัส / สแกน QR Code</h3>
+                    <button onclick="backToStep1()" class="text-slate-500 hover:text-slate-800 transition-colors bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center shadow-sm">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> ย้อนกลับ
+                    </button>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">กรอกรหัสจุดตรวจ (เช่น <span id="hint-code" class="text-corporate font-bold">GT-0001</span>)</label>
+                    <div class="flex flex-col md:flex-row gap-2">
+                        <input type="text" id="qr-code-input" placeholder="กรอกรหัสตรงนี้..." class="flex-grow px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-800 transition-all shadow-sm uppercase">
+                        <div class="flex gap-2">
+                            <button onclick="verifyQRCode()" class="bg-corporate btn-hover text-white px-5 py-3 rounded-lg font-medium flex items-center shrink-0 justify-center">
+                                <i class="fa-solid fa-magnifying-glass mr-2"></i> ตรวจสอบ
+                            </button>
+                            <button onclick="openCameraScan()" class="bg-slate-700 btn-hover text-white px-5 py-3 rounded-lg font-medium flex items-center shrink-0 justify-center">
+                                <i class="fa-solid fa-camera mr-2"></i> สแกนกล้อง
+                            </button>
+                        </div>
+                    </div>
+                    <div id="reader-container" class="hidden mt-4 bg-black rounded-lg overflow-hidden border border-slate-300 shadow-inner relative">
+                        <div id="reader" style="width: 100%;"></div>
+                        <button onclick="closeCameraScan()" class="absolute top-2 right-2 bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-rose-600 transition z-50">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <div id="qr-success-msg" class="hidden mt-4 p-4 bg-emerald-50 text-emerald-700 rounded-lg text-sm flex items-center shadow-inner border border-emerald-100 animate-fade-in">
+                        <i class="fa-solid fa-circle-check text-xl mr-3 text-emerald-500"></i> 
+                        <div>
+                            <p class="font-semibold text-xs text-emerald-600 mb-0.5">ตรวจสอบจุดตรวจสำเร็จ:</p>
+                            <span id="scanned-location" class="font-bold text-lg"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="step3-form" class="hidden animate-fade-in max-w-2xl mx-auto bg-white rounded-xl shadow-md border border-slate-200 p-6">
+                <form id="patrol-main-form" onsubmit="handleFormSubmit(event)">
+                    <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
+                        <h3 id="form-title" class="text-lg font-bold text-slate-800">3. แบบฟอร์มบันทึก</h3>
+                        <span id="form-badge-area" class="px-3 py-1.5 bg-corporate text-white text-xs rounded-full font-bold shadow-sm"></span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">วันที่ตรวจสอบ <span class="text-rose-500">*</span></label>
+                            <input type="date" required id="form-date" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-800 shadow-sm transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">ผู้ตรวจสอบ <span class="text-rose-500">*</span></label>
+                            <input type="text" required id="form-inspector-name" placeholder="ชื่อ-สกุล" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-800 shadow-sm transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">รอบการตรวจ <span class="text-rose-500">*</span></label>
+                            <select id="form-shift-select" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-800 shadow-sm transition-all"></select>
+                        </div>
+                    </div>
+
+                    <div id="dynamic-questions" class="space-y-4 mb-6"></div>
+
+                    <div class="flex space-x-3 mt-6">
+                        <button type="button" onclick="backToStep2()" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-colors">ย้อนกลับ</button>
+                        <button type="submit" id="btn-submit-data" class="w-2/3 bg-safety btn-hover text-white font-bold py-3 rounded-xl flex justify-center items-center shadow-lg shadow-orange-200/50">
+                            <i class="fa-solid fa-cloud-arrow-up mr-2"></i> บันทึกข้อมูล
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section id="page2" class="page-section hidden animate-fade-in">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-md mb-6 flex flex-wrap items-center justify-between gap-4 no-print">
+                <div class="flex items-center space-x-3">
+                    <h2 class="text-xl font-bold text-slate-800">แดชบอร์ดความปลอดภัย</h2>
+                    <button onclick="fetchDataFromServer()" class="btn-hover text-slate-500 hover:text-corporate p-2 rounded-lg bg-slate-50 border border-slate-200 shadow-sm" title="รีเฟรชข้อมูล"><i class="fa-solid fa-rotate"></i></button>
+                </div>
+                <div class="flex items-center space-x-2 text-sm">
+                    <label class="text-slate-500 font-semibold text-xs">เลือกเดือน/ปี:</label>
+                    <input type="month" id="filter-month-year" onchange="refreshDashboard()" class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-800 shadow-sm transition-all">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 mb-6">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-md overflow-x-auto print-section">
+                    <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-2">
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center"><i class="fa-solid fa-calendar-check text-slate-400 mr-2"></i> ความถี่การตรวจ Guard Tour</h3>
+                        <div class="flex space-x-2 no-print">
+                            <button onclick="exportTableToCSV('table-gt-freq', 'Guard_Tour_Report')" class="btn-hover bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium"><i class="fa-solid fa-file-excel mr-1"></i> Export</button>
+                        </div>
+                    </div>
+                    <table class="w-full text-left border-collapse table-fixed min-w-[800px]" id="table-gt-freq">
+                        <thead id="gt-freq-head"></thead>
+                        <tbody id="gt-freq-body" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                    </table>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-md overflow-x-auto print-section">
+                    <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-2">
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center"><i class="fa-solid fa-calendar-check text-slate-400 mr-2"></i> ความถี่การตรวจ Stock Room</h3>
+                        <div class="flex space-x-2 no-print">
+                            <button onclick="exportTableToCSV('table-sr-freq', 'Stock_Room_Report')" class="btn-hover bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium"><i class="fa-solid fa-file-excel mr-1"></i> Export</button>
+                        </div>
+                    </div>
+                    <table class="w-full text-left border-collapse table-fixed min-w-[800px]" id="table-sr-freq">
+                        <thead id="sr-freq-head"></thead>
+                        <tbody id="sr-freq-body" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md">
+                <div class="flex justify-between items-center mb-4 flex-wrap gap-2 border-b border-slate-100 pb-2">
+                    <h3 class="text-sm font-bold text-slate-800 flex items-center"><i class="fa-solid fa-clock-rotate-left text-slate-400 mr-2"></i> รายการตรวจล่าสุด</h3>
+                    <div class="flex items-center space-x-2 text-xs text-slate-600">
+                        <button onclick="exportTableToCSV('table-recent-logs', 'Recent_Logs')" class="no-print btn-hover bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-medium"><i class="fa-solid fa-file-excel mr-1"></i> Export</button>
+                        <span class="no-print">แสดงผล:</span>
+                        <select id="recent-length" onchange="renderRecentLogs()" class="no-print px-2 py-1 border border-slate-300 rounded-md bg-white shadow-sm focus:ring-2 focus:ring-slate-800 outline-none">
+                            <option value="10">10 รายการ</option>
+                            <option value="20">20 รายการ</option>
+                            <option value="50">50 รายการ</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left text-slate-600" id="table-recent-logs">
+                        <thead class="bg-slate-100 text-slate-700 uppercase rounded-t-lg">
+                            <tr>
+                                <th class="p-3 border-b border-slate-200 font-bold">วัน/เวลาตรวจสอบ</th>
+                                <th class="p-3 border-b border-slate-200 font-bold">ประเภทพื้นที่</th>
+                                <th class="p-3 border-b border-slate-200 font-bold">ผู้ตรวจ</th>
+                                <th class="p-3 border-b border-slate-200 font-bold">รอบ</th>
+                                <th class="p-3 border-b border-slate-200 font-bold">ผลการตรวจย่อ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-logs-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="page3" class="page-section hidden animate-fade-in no-print">
+             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md text-center text-slate-500 py-20">
+                 <h2 class="text-xl font-bold mb-2">หน้าตั้งค่าระบบ</h2>
+                 <p>กรุณาวางโค้ดส่วน `id="page3"` ของคุณลงที่นี่ได้เลยครับ เพื่อให้หน้าตากลับมาเหมือนเดิม</p>
+             </div>
+        </section>
+    </main>
+
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] flex justify-center items-center hidden no-print animate-fade-in">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center relative transform transition-all">
+            <div id="modal-icon-bg" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl">
+                <i id="modal-icon" class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2" id="modal-title">แจ้งเตือน</h3>
+            <p class="text-sm text-slate-600 mb-6 font-medium" id="modal-message">ข้อความ</p>
+            <div class="flex justify-center gap-3" id="modal-buttons">
+                </div>
+        </div>
+    </div>
+
+    <div id="login-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex justify-center items-center hidden no-print animate-fade-in">
+        <div class="bg-white w-full max-w-xs rounded-2xl shadow-2xl p-6 relative transform transition-all">
+            <button onclick="cancelLogin()" class="absolute top-4 right-4 text-slate-400 hover:text-rose-500 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div class="text-center mb-6 mt-2">
+                <div class="w-14 h-14 bg-corporate rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
+                    <i class="fa-solid fa-shield-halved text-2xl text-amber-400"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800">เข้าสู่ระบบยืนยันสิทธิ์</h3>
+            </div>
+            <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                <div>
+                    <input type="text" id="login-user" required placeholder="Username" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-all shadow-sm">
+                </div>
+                <div class="relative">
+                    <input type="password" id="login-pass" required placeholder="Password" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-all shadow-sm">
+                    <button type="button" onmousedown="showPassword('login-pass')" onmouseup="hidePassword('login-pass')" onmouseleave="hidePassword('login-pass')" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition-colors p-1">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+                <button type="submit" id="btn-login" class="w-full py-2.5 mt-2 bg-corporate btn-hover text-white text-sm rounded-lg font-bold shadow-md">เข้าสู่ระบบ</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="global-loader" class="fixed inset-0 bg-slate-900/50 z-[200] hidden flex-col justify-center items-center">
+        <div class="w-12 h-12 border-4 border-slate-300 border-t-amber-400 rounded-full animate-spin mb-3 shadow-lg"></div>
+        <p class="text-white font-bold tracking-wider animate-pulse">กำลังประมวลผลฐานข้อมูล...</p>
+    </div>
+
+    <script>
+        // =====================================
+        // URL WEB APP ที่ได้จากฝั่ง GOOGLE APPS SCRIPT
+        // =====================================
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxYviGZ935dZHw0BXzCTJ9RQaUl4GMfODI4BZkERxrD1E6ujU-LQfIuJAtmVaRnkoPj/exec"; 
+
+        // Data Setup
+        let currentPatrolType = '';
+        let targetTargetPage = '';
+        let loggedInUser = null;
+        let html5QrCode = null;
+
+        // Configuration
+        let configUsers = [ { id: "u1", username: "admin", password: "123", role: "admin", canViewDashboard: true, canEditDashboard: true } ];
+        let configShifts = [
+            { id: "d1", name: "Day 1 (10:00-12:00)", start: 10, end: 12 }, 
+            { id: "d2", name: "Day 2 (15:00-17:00)", start: 15, end: 17 },
+            { id: "n1", name: "Night 1 (01:00-03:00)", start: 1, end: 3 }, 
+            { id: "n2", name: "Night 2 (04:00-06:00)", start: 4, end: 6 }
+        ];
+        let configQRs = [
+            { code: "GT-0001", name: "Guard Tour โซน A", detail: "บริเวณหน้าประตูทางเข้าหลัก", type: "guard_tour" },
+            { code: "ST-0001", name: "Stock Room หลัก", detail: "ชั้น 2 ห้องเก็บสต๊อก", type: "stock_room" }
+        ];
+        let configGuardTourAnswers = ["เหตุการณ์ปกติ", "พบสิ่งผิดปกติ"];
+        let configStockRoomQuestions = []; // ลบคำถามจำลองออกตามความต้องการ 
+        let submissionLogs = [];
+
+        window.onload = function() {
+            document.getElementById('filter-month-year').value = new Date().toISOString().slice(0, 7);
+            setupFormShiftsDropdown();
+            fetchDataFromServer();
+        };
+
+        // --- FETCH API (เชื่อมต่อกับ Backend) ---
+        function showLoader() { document.getElementById('global-loader').classList.remove('hidden'); document.getElementById('global-loader').classList.add('flex'); }
+        function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); document.getElementById('global-loader').classList.remove('flex'); }
+
+        async function fetchGAS(action, data = null) {
+            if(WEB_APP_URL === "YOUR_WEB_APP_URL_HERE") {
+                console.warn("ระบบทำงานแบบ Offline (ยังไม่ได้ใส่ URL)");
+                return null;
+            }
+            try {
+                let res = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: action, data: data })
+                });
+                let json = await res.json();
+                return json.data;
+            } catch (err) {
+                console.error("API Error:", err);
+                return null;
+            }
+        }
+
+        async function fetchDataFromServer() {
+            showLoader();
+            let logsData = await fetchGAS("getLogs");
+            if(logsData) submissionLogs = logsData;
+            
+            let usersData = await fetchGAS("getUsers");
+            if(usersData && usersData.length > 0) configUsers = usersData;
+            
+            refreshDashboardIfActive();
+            hideLoader();
+        }
+
+        function setupFormShiftsDropdown() {
+            let s = document.getElementById('form-shift-select');
+            s.innerHTML = '<option value="">-- เลือกรอบเวลา --</option>';
+            configShifts.forEach(shift => { s.insertAdjacentHTML('beforeend', `<option value="${shift.id}">${shift.name}</option>`); });
+        }
+
+        // --- NAVIGATION & AUTH (บังคับ Logout ตามเงื่อนไข) ---
+        let currentPageId = 'page1';
+
+        function attemptNavigate(pageId) {
+            // เงื่อนไขบังคับการเปลี่ยนหน้า Dashboard/Settings ต้องเคลียร์รหัสตลอด
+            if(currentPageId !== 'page1' && pageId !== currentPageId) {
+                // บังคับ Logout ออกทันทีและล้างค่า
+                logout(false);
+            }
+            
+            if (pageId === 'page1') {
+                navigateTo('page1');
+            } else {
+                checkAccessAndNavigate(pageId);
+            }
+        }
+
+        function navigateTo(pageId) {
+            document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(pageId).classList.remove('hidden');
+            
+            document.querySelectorAll('nav button').forEach(btn => { 
+                btn.classList.remove('bg-slate-700', 'text-white', 'shadow-sm'); 
+                btn.classList.add('text-slate-300'); 
+            });
+            document.getElementById(`nav-${pageId}`).classList.add('bg-slate-700', 'text-white', 'shadow-sm');
+            document.getElementById(`nav-${pageId}`).classList.remove('text-slate-300');
+
+            currentPageId = pageId;
+            if(pageId === 'page2') refreshDashboard();
+            if(pageId === 'page1') resetPage1();
+        }
+
+        function checkAccessAndNavigate(pageId) {
+            if(loggedInUser) {
+                if(pageId === 'page2' && !loggedInUser.canViewDashboard) { showCustomAlert("บัญชีของคุณไม่มีสิทธิ์เข้าดูแดชบอร์ด", "error"); return; }
+                if(pageId === 'page3' && loggedInUser.role !== 'admin') { showCustomAlert("ฟังก์ชันนี้สำหรับ Admin เท่านั้น", "error"); return; }
+                navigateTo(pageId);
+            } else {
+                triggerAuth(pageId);
+            }
+        }
+
+        function triggerAuth(pageId) {
+            document.getElementById('login-user').value = ''; // ล้างค่าตามข้อกำหนด
+            document.getElementById('login-pass').value = '';
+            document.getElementById('login-pass').type = 'password';
+            targetTargetPage = pageId;
+            document.getElementById('login-modal').classList.remove('hidden');
+        }
+
+        function cancelLogin() { document.getElementById('login-modal').classList.add('hidden'); }
+        
+        function logout(redirect = true) { 
+            loggedInUser = null; 
+            document.getElementById('user-status').classList.add('hidden');
+            document.getElementById('login-user').value = ''; // ล้าง User
+            document.getElementById('login-pass').value = ''; // ล้าง Password
+            if(redirect) navigateTo('page1'); 
+        }
+
+        function showPassword(id) { document.getElementById(id).type = 'text'; }
+        function hidePassword(id) { document.getElementById(id).type = 'password'; }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            let u = document.getElementById('login-user').value;
+            let p = document.getElementById('login-pass').value;
+            let foundUser = configUsers.find(user => (user.username === u || user.username.toLowerCase() === u.toLowerCase()) && user.password === p);
+            
+            if(foundUser) {
+                if(targetTargetPage === 'page2' && !foundUser.canViewDashboard) { showCustomAlert("บัญชีของคุณไม่มีสิทธิ์เข้าดูแดชบอร์ด", "error"); return; }
+                if(targetTargetPage === 'page3' && foundUser.role !== 'admin') { showCustomAlert("ฟังก์ชันนี้สำหรับ Admin เท่านั้น", "error"); return; }
+                loggedInUser = foundUser;
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('user-status').classList.remove('hidden');
+                document.getElementById('user-status').classList.add('flex');
+                document.getElementById('status-text').innerText = foundUser.username;
+                navigateTo(targetTargetPage);
+            } else { 
+                showCustomAlert('Username หรือ Password ไม่ถูกต้อง!', "error"); 
+            }
+        }
+
+        // --- PAGE 1: FORM ---
+        function resetPage1() {
+            document.getElementById('step1-select-type').classList.remove('hidden');
+            document.getElementById('step2-scan-qr').classList.add('hidden');
+            document.getElementById('step3-form').classList.add('hidden');
+            document.getElementById('qr-code-input').value = ''; // ล้างค่ารหัสจุดตรวจ
+            closeCameraScan(); // ปิดกล้องกรณีค้าง
+        }
+
+        function selectPatrolType(type) {
+            currentPatrolType = type;
+            document.getElementById('step1-select-type').classList.add('hidden');
+            document.getElementById('step2-scan-qr').classList.remove('hidden');
+            document.getElementById('qr-code-input').value = ''; // ล้างค่าเมื่อเข้าหน้าใหม่
+            document.getElementById('qr-success-msg').classList.add('hidden');
+            document.getElementById('hint-code').innerText = type === 'guard_tour' ? 'GT-0001' : 'ST-0001';
+        }
+
+        function backToStep1() { resetPage1(); }
+        function backToStep2() {
+            document.getElementById('step3-form').classList.add('hidden');
+            document.getElementById('step2-scan-qr').classList.remove('hidden');
+            document.getElementById('qr-code-input').value = ''; // ล้างค่าเมื่อย้อนกลับ
+            document.getElementById('qr-success-msg').classList.add('hidden');
+        }
+
+        // --- การเปิดใช้กล้องจริง ---
+        function openCameraScan() {
+            document.getElementById('reader-container').classList.remove('hidden');
+            
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+            
+            html5QrCode.start(
+                { facingMode: "environment" }, 
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText, decodedResult) => {
+                    // หากสแกนสำเร็จ
+                    document.getElementById('qr-code-input').value = decodedText;
+                    closeCameraScan();
+                    verifyQRCode(); 
+                },
+                (errorMessage) => {
+                    // กำลังสแกนหา...
+                }
+            ).catch((err) => {
+                showCustomAlert("กรุณาอนุญาตให้ระบบเข้าถึงกล้องของคุณเพื่อสแกน QR Code", "warning");
+                document.getElementById('reader-container').classList.add('hidden');
+            });
+        }
+
+        function closeCameraScan() {
+            if (html5QrCode) {
+                html5QrCode.stop().then((ignore) => {
+                    // ปิดสำเร็จ
+                }).catch((err) => {
+                    console.log("ปิดกล้องไม่ได้", err);
+                });
+            }
+            document.getElementById('reader-container').classList.add('hidden');
+        }
+
+        function verifyQRCode() {
+            let inputCode = document.getElementById('qr-code-input').value.trim().toUpperCase();
+            if(!inputCode) { showCustomAlert("กรุณากรอกรหัส QR Code", "warning"); return; }
+            let expectedPrefix = currentPatrolType === 'guard_tour' ? 'GT-' : 'ST-';
+            if(!inputCode.startsWith(expectedPrefix)) {
+                showCustomAlert(`รหัสไม่ถูกต้อง! กรุณากรอกรหัสที่ขึ้นต้นด้วย ${expectedPrefix}`, "error");
+                return;
+            }
+
+            const matchedLocation = configQRs.find(q => q.code === inputCode);
+            if(!matchedLocation) { showCustomAlert('ไม่พบรหัส QR Code นี้ในระบบ', "error"); return; }
+
+            document.getElementById('scanned-location').innerText = matchedLocation.name;
+            document.getElementById('qr-success-msg').classList.remove('hidden');
+            
+            setTimeout(() => {
+                document.getElementById('step2-scan-qr').classList.add('hidden');
+                document.getElementById('step3-form').classList.remove('hidden');
+                document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('form-badge-area').innerText = matchedLocation.name;
+                document.getElementById('form-title').innerText = currentPatrolType === 'guard_tour' ? "บันทึก: Guard Tour" : "บันทึก: Stock Room";
+                generateDynamicQuestions();
+            }, 800);
+        }
+
+        function generateDynamicQuestions() {
+            const container = document.getElementById('dynamic-questions');
+            container.innerHTML = '';
+            if(currentPatrolType === 'guard_tour') {
+                let html = `<div class="p-5 bg-slate-50 border border-slate-200 rounded-xl mb-3 shadow-sm">
+                    <p class="text-sm font-bold text-slate-800 mb-3"><i class="fa-solid fa-circle-question mr-1.5 text-corporate"></i> ผลการตรวจสอบสภาพความปลอดภัยทั่วไป</p>
+                    <div class="grid grid-cols-1 gap-2 text-xs">`;
+                configGuardTourAnswers.forEach((ans) => {
+                    html += `<label class="flex items-start space-x-2 p-2.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-100 hover:border-slate-300 cursor-pointer transition-colors shadow-sm">
+                        <input type="checkbox" name="gt_ans" value="${ans}" class="mt-0.5 w-4 h-4 accent-corporate rounded">
+                        <span class="text-slate-700 text-sm leading-tight">${ans}</span>
+                    </label>`;
+                });
+                html += `</div></div>`;
+                container.innerHTML = html;
+            } 
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            // --- TIME VALIDATION LOGIC FOR NIGHT SHIFTS (ส่งผลไม่เกิน 07:00 ของวันถัดไป) ---
+            let bizDateStr = document.getElementById('form-date').value;
+            let shiftId = document.getElementById('form-shift-select').value;
+            
+            if(shiftId === 'n1' || shiftId === 'n2') {
+                let formDate = new Date(bizDateStr);
+                let maxAllowedTime = new Date(formDate);
+                maxAllowedTime.setDate(maxAllowedTime.getDate() + 1); // บวกวันเป็นวันถัดไป
+                maxAllowedTime.setHours(7, 0, 0, 0); // ตั้งขีดจำกัดที่ 07:00 น.
+                
+                let actualNow = new Date();
+                if(actualNow > maxAllowedTime) {
+                    showCustomAlert(`ไม่อนุญาตให้ส่งผลย้อนหลังเกิน 07:00 น. ของวันถัดไป (รอบการตรวจ ${bizDateStr} หมดเขตแล้ว)`, 'error');
+                    return;
+                }
+            }
+
+            let submitBtn = document.getElementById('btn-submit-data');
+            let originalBtnHTML = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังบันทึกข้อมูล...';
+            submitBtn.disabled = true;
+
+            let summaryStr = "เหตุการณ์ปกติ";
+            if(currentPatrolType === 'guard_tour') {
+                let items = [];
+                document.querySelectorAll('input[name="gt_ans"]:checked').forEach(b => items.push(b.value));
+                if(items.length === 0) { 
+                    showCustomAlert('กรุณาเลือกผลการตรวจสอบอย่างน้อย 1 รายการ', 'warning');
+                    submitBtn.innerHTML = originalBtnHTML; submitBtn.disabled = false; return;
+                }
+                summaryStr = items.join(', ');
+            } 
+
+            let newLog = {
+                id: Math.random().toString(36).substr(2, 9),
+                timestamp: new Date().toLocaleString('th-TH'),
+                businessDate: bizDateStr, type: currentPatrolType,
+                inspector: document.getElementById('form-inspector-name').value,
+                shiftId: shiftId, summary: summaryStr
+            };
+            
+            submissionLogs.unshift(newLog);
+            
+            // ส่งข้อมูลไปยัง Google Apps Script
+            await fetchGAS("saveLog", newLog);
+
+            submitBtn.innerHTML = originalBtnHTML; submitBtn.disabled = false;
+            
+            showCustomAlert("🎉 บันทึกข้อมูลเข้าสู่ระบบเรียบร้อยแล้ว!", "success", () => {
+                document.getElementById('patrol-main-form').reset(); resetPage1();
+            });
+        }
+
+        // --- PAGE 2: DASHBOARD (ระบบตารางเวลา และ Refresh) ---
+        function refreshDashboardIfActive() {
+            if (!document.getElementById('page2').classList.contains('hidden')) refreshDashboard();
+        }
+
+        function refreshDashboard() {
+            renderFrequencyTable('guard_tour', 'gt-freq-body', 'gt-freq-head');
+            renderFrequencyTable('stock_room', 'sr-freq-body', 'sr-freq-head');
+            renderRecentLogs();
+        }
+
+        function renderFrequencyTable(type, targetTbody, targetThead) {
+            const body = document.getElementById(targetTbody);
+            const head = document.getElementById(targetThead);
+            body.innerHTML = ''; head.innerHTML = '';
+            
+            let filterVal = document.getElementById('filter-month-year').value; 
+            if(!filterVal) return;
+            let [targetYearStr, filterMonth] = filterVal.split('-');
+            let daysInMonth = new Date(parseInt(targetYearStr), parseInt(filterMonth), 0).getDate();
+            
+            let trHead = `<tr class="bg-slate-100 text-slate-700 text-[10px]">
+                <th class="p-2 border border-slate-200 sticky left-0 bg-slate-100 z-10 w-24 shadow-sm">รอบ / วันที่</th>`;
+            for(let d=1; d<=daysInMonth; d++) { trHead += `<th class="p-1 border border-slate-200 text-center min-w-[20px] w-6">${d}</th>`; }
+            trHead += `<th class="p-1 border border-slate-200 text-center w-12 text-emerald-700 shadow-sm">รวมตรวจ</th>
+                       <th class="p-1 border border-slate-200 text-center w-12 text-blue-700 shadow-sm">%</th></tr>`;
+            head.innerHTML = trHead;
+
+            let actualNow = new Date();
+            let canEdit = loggedInUser && loggedInUser.canEditDashboard;
+            
+            configShifts.forEach(shift => {
+                let tr = `<tr class="hover:bg-slate-50 transition-colors">
+                    <td class="p-2 border border-slate-100 font-bold text-slate-600 bg-white sticky left-0 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] text-[10px] whitespace-nowrap">${shift.name}</td>`;
+                let countChecked = 0; let totalPastDays = 0;
+
+                for (let d = 1; d <= daysInMonth; d++) {
+                    let dateStr = `${targetYearStr}-${filterMonth}-${String(d).padStart(2, '0')}`;
+                    let logFound = submissionLogs.find(l => l.businessDate === dateStr && l.shiftId === shift.id && l.type === type);
+                    
+                    // คำนวณช่วงเวลาของการตรวจ (รวมกะดึก)
+                    let loopDate = new Date(parseInt(targetYearStr), parseInt(filterMonth) - 1, d);
+                    let shiftEndObj = new Date(loopDate);
+                    
+                    if(shift.id === 'n1' || shift.id === 'n2') {
+                        // กะดึกจะนับว่าสิ้นสุดในวันถัดไปตามเวลา
+                        shiftEndObj.setDate(shiftEndObj.getDate() + 1);
+                    }
+                    shiftEndObj.setHours(shift.end, 0, 0, 0);
+
+                    // หากเวลาปัจจุบัน เลย เวลาสิ้นสุดรอบนั้น ๆ แล้ว
+                    let isShiftEnded = actualNow > shiftEndObj;
+                    if(isShiftEnded) totalPastDays++;
+                    
+                    let cellClass = `p-1 border border-slate-100 text-center text-[10px] shadow-inner transition-colors`;
+                    
+                    if (logFound) {
+                        if(isShiftEnded) countChecked++;
+                        tr += `<td class="${cellClass} text-emerald-500 bg-emerald-50/70" title="ตรวจแล้ว"><i class="fa-solid fa-check"></i></td>`;
+                    } else {
+                        if (isShiftEnded) { 
+                            tr += `<td class="${cellClass} text-rose-500 bg-rose-50/70" title="ไม่พบผลตรวจ"><i class="fa-solid fa-xmark"></i></td>`;
+                        } else { 
+                            // หากรอบการตรวจยังไม่หมดเวลา ให้ใส่ขีด -
+                            tr += `<td class="${cellClass} text-slate-400 font-bold bg-slate-50/50" title="ยังไม่หมดเวลา">-</td>`;
+                        }
+                    }
+                }
+                
+                let percent = totalPastDays > 0 ? Math.min(100, Math.round((countChecked / totalPastDays) * 100)) : 0;
+                tr += `<td class="p-1 border border-slate-100 text-center font-extrabold text-emerald-700 bg-emerald-50/30 text-[11px]">${countChecked}</td>`;
+                tr += `<td class="p-1 border border-slate-100 text-center font-extrabold text-blue-700 bg-blue-50/30 text-[11px]">${percent}%</td></tr>`;
+                body.insertAdjacentHTML('beforeend', tr);
+            });
+        }
+
+        function renderRecentLogs() {
+            const body = document.getElementById('recent-logs-body');
+            body.innerHTML = '';
+            let limit = parseInt(document.getElementById('recent-length').value);
+            let counter = 0;
+            submissionLogs.forEach(log => {
+                if(counter >= limit) return;
+                let shiftObj = configShifts.find(s => s.id === log.shiftId);
+                let shiftLabel = shiftObj ? shiftObj.name.split(' ')[0] : log.shiftId;
+                let badgeClass = (log.type === 'guard_tour') ? "bg-slate-100 text-slate-800 border border-slate-200" : "bg-orange-50 text-orange-700 border border-orange-200";
+                
+                let tr = `<tr class="hover:bg-slate-50 transition-colors">
+                    <td class="p-3 border-b border-slate-100 font-medium text-slate-700">${log.timestamp}</td>
+                    <td class="p-3 border-b border-slate-100"><span class="px-2.5 py-1 rounded-md text-[10px] font-bold shadow-sm ${badgeClass}">${log.type.toUpperCase()}</span></td>
+                    <td class="p-3 border-b border-slate-100 font-medium">${log.inspector}</td>
+                    <td class="p-3 border-b border-slate-100 font-bold text-slate-600">${shiftLabel}</td>
+                    <td class="p-3 border-b border-slate-100 max-w-xs truncate text-slate-600" title="${log.summary}">${log.summary}</td>
+                </tr>`;
+                body.insertAdjacentHTML('beforeend', tr);
+                counter++;
+            });
+        }
+
+        // ฟังชัน Export เป็น CSV
+        function exportTableToCSV(tableId, filename) {
+            let table = document.getElementById(tableId);
+            let rows = table.querySelectorAll('tr');
+            let csv = [];
+            for (let i = 0; i < rows.length; i++) {
+                let row = [], cols = rows[i].querySelectorAll('td, th');
+                for (let j = 0; j < cols.length; j++) row.push('"' + cols[j].innerText.replace(/"/g, '""') + '"');
+                csv.push(row.join(','));
+            }
+            let csvString = csv.join('\n');
+            let blob = new Blob(["\uFEFF" + csvString], { type: 'text/csv;charset=utf-8;' });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = filename + "_" + new Date().getTime() + ".csv";
+            link.style.display = "none";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showCustomAlert(`ดาวน์โหลดไฟล์ Excel (.csv) สำเร็จ!`, "success");
+        }
+
+        // --- CUSTOM UI MODALS ---
+        function showCustomAlert(message, type = "info", callback = null) {
+            document.getElementById('custom-modal').classList.remove('hidden');
+            let iconDiv = document.getElementById('modal-icon-bg');
+            let iconElement = document.getElementById('modal-icon');
+            let titleElement = document.getElementById('modal-title');
+            let btnContainer = document.getElementById('modal-buttons');
+            
+            document.getElementById('modal-message').innerHTML = message;
+            btnContainer.innerHTML = '';
+
+            let okBtn = document.createElement('button');
+            okBtn.className = "w-full py-2.5 text-white text-sm rounded-lg font-bold shadow-md transition-all";
+            okBtn.innerText = "ตกลง";
+            okBtn.onclick = () => { document.getElementById('custom-modal').classList.add('hidden'); if(callback) callback(); };
+
+            if(type === "error") {
+                iconDiv.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-rose-100 text-rose-500";
+                iconElement.className = "fa-solid fa-circle-xmark";
+                titleElement.innerText = "เกิดข้อผิดพลาด";
+                okBtn.classList.add('bg-rose-500', 'hover:bg-rose-600');
+            } else if(type === "success") {
+                iconDiv.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-emerald-100 text-emerald-500";
+                iconElement.className = "fa-solid fa-circle-check";
+                titleElement.innerText = "สำเร็จ";
+                okBtn.classList.add('bg-emerald-500', 'hover:bg-emerald-600');
+            } else if(type === "warning") {
+                iconDiv.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-amber-100 text-amber-500";
+                iconElement.className = "fa-solid fa-triangle-exclamation";
+                titleElement.innerText = "แจ้งเตือน";
+                okBtn.classList.add('bg-amber-500', 'hover:bg-amber-600');
+            } else {
+                iconDiv.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-blue-100 text-blue-500";
+                iconElement.className = "fa-solid fa-circle-info";
+                titleElement.innerText = "ข้อมูล";
+                okBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+            }
+            btnContainer.appendChild(okBtn);
+        }
+    </script>
+</body>
+</html>
