@@ -755,6 +755,46 @@
             document.body.removeChild(link);
             showCustomAlert(`ดาวน์โหลดไฟล์ Excel (.csv) สำเร็จ!`, "success");
         }
+
+        // --- CUSTOM UI MODALS ---
+        function showCustomAlert(message, type = "info", callback = null) {
+            document.getElementById('custom-modal').classList.remove('hidden');
+            let iconDiv = document.getElementById('modal-icon-bg');
+            let iconElement = document.getElementById('modal-icon');
+            let titleElement = document.getElementById('modal-title');
+            let btnContainer = document.getElementById('modal-buttons');
+            
+            document.getElementById('modal-message').innerHTML = message;
+            btnContainer.innerHTML = '';
+
+            let okBtn = document.createElement('button');
+            okBtn.className = "w-full py-2.5 text-white text-sm rounded-lg font-bold shadow-md transition-all";
+            okBtn.innerText = "ตกลง";
+            okBtn.onclick = () => { document.getElementById('custom-modal').classList.add('hidden'); if(callback) callback(); };
+
+            if(type === "error") {
+                iconDiv.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-rose-100 text-rose-500";
+                iconElement.className = "fa-solid fa-circle-xmark";
+                titleElement.innerText = "เกิดข้อผิดพลาด";
+                okBtn.classList.add('bg-rose-500', 'hover:bg-rose-600');
+            } else if(type === "success") {
+                iconDiv.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-emerald-100 text-emerald-500";
+                iconElement.className = "fa-solid fa-circle-check";
+                titleElement.innerText = "สำเร็จ";
+                okBtn.classList.add('bg-emerald-500', 'hover:bg-emerald-600');
+            } else if(type === "warning") {
+                iconDiv.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-amber-100 text-amber-500";
+                iconElement.className = "fa-solid fa-triangle-exclamation";
+                titleElement.innerText = "แจ้งเตือน";
+                okBtn.classList.add('bg-amber-500', 'hover:bg-amber-600');
+            } else {
+                iconDiv.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-blue-100 text-blue-500";
+                iconElement.className = "fa-solid fa-circle-info";
+                titleElement.innerText = "ข้อมูล";
+                okBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+            }
+            btnContainer.appendChild(okBtn);
+        }
         // --- ฟังก์ชันจัดการ QR Code ---
 function addQR() {
     let code = document.getElementById('new-qr-code').value;
@@ -805,46 +845,6 @@ function renderSettings() {
 
 // เรียกใช้ทุกครั้งที่กดเข้าหน้า Page 3
 // ในฟังก์ชัน navigateTo(pageId) ให้เพิ่ม: if(pageId === 'page3') renderSettings();
-
-        // --- CUSTOM UI MODALS ---
-        function showCustomAlert(message, type = "info", callback = null) {
-            document.getElementById('custom-modal').classList.remove('hidden');
-            let iconDiv = document.getElementById('modal-icon-bg');
-            let iconElement = document.getElementById('modal-icon');
-            let titleElement = document.getElementById('modal-title');
-            let btnContainer = document.getElementById('modal-buttons');
-            
-            document.getElementById('modal-message').innerHTML = message;
-            btnContainer.innerHTML = '';
-
-            let okBtn = document.createElement('button');
-            okBtn.className = "w-full py-2.5 text-white text-sm rounded-lg font-bold shadow-md transition-all";
-            okBtn.innerText = "ตกลง";
-            okBtn.onclick = () => { document.getElementById('custom-modal').classList.add('hidden'); if(callback) callback(); };
-
-            if(type === "error") {
-                iconDiv.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-rose-100 text-rose-500";
-                iconElement.className = "fa-solid fa-circle-xmark";
-                titleElement.innerText = "เกิดข้อผิดพลาด";
-                okBtn.classList.add('bg-rose-500', 'hover:bg-rose-600');
-            } else if(type === "success") {
-                iconDiv.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-emerald-100 text-emerald-500";
-                iconElement.className = "fa-solid fa-circle-check";
-                titleElement.innerText = "สำเร็จ";
-                okBtn.classList.add('bg-emerald-500', 'hover:bg-emerald-600');
-            } else if(type === "warning") {
-                iconDiv.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-amber-100 text-amber-500";
-                iconElement.className = "fa-solid fa-triangle-exclamation";
-                titleElement.innerText = "แจ้งเตือน";
-                okBtn.classList.add('bg-amber-500', 'hover:bg-amber-600');
-            } else {
-                iconDiv.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-blue-100 text-blue-500";
-                iconElement.className = "fa-solid fa-circle-info";
-                titleElement.innerText = "ข้อมูล";
-                okBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
-            }
-            btnContainer.appendChild(okBtn);
-        }
     </script>
 </body>
 </html>
