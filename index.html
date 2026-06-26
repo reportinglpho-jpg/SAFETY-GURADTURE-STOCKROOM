@@ -845,6 +845,31 @@ function renderSettings() {
 
 // เรียกใช้ทุกครั้งที่กดเข้าหน้า Page 3
 // ในฟังก์ชัน navigateTo(pageId) ให้เพิ่ม: if(pageId === 'page3') renderSettings();
+        function startCamera() {
+    // ระวัง: 'reader' ต้องเป็น id ของ div ที่คุณใช้แสดงกล้องใน HTML
+    const html5QrCode = new Html5Qrcode("reader"); 
+
+    html5QrCode.start(
+        { facingMode: "environment" }, // พยายามเปิดกล้องหลัง
+        {
+            fps: 10,    // เฟรมเรต
+            qrbox: { width: 250, height: 250 } // ขนาดกรอบสแกน
+        },
+        (decodedText, decodedResult) => {
+            // เมื่อสแกนเจอ ให้ทำตรงนี้
+            alert(`สแกนเจอแล้ว: ${decodedText}`);
+            // หลังจากสแกนเจอ ควรปิดกล้องด้วย
+            html5QrCode.stop();
+        },
+        (errorMessage) => {
+            // Error ตอนสแกน (ไม่ต้องใส่ใจมาก)
+        })
+    .catch((err) => {
+        // ถ้ากล้องเปิดไม่ขึ้น มันจะมาแสดงที่นี่
+        console.error("Error เปิดกล้อง:", err);
+        alert("ไม่สามารถเปิดกล้องได้: " + err);
+    });
+}
     </script>
 </body>
 </html>
