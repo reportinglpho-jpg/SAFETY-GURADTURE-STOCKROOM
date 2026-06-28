@@ -214,63 +214,62 @@
             </div>
         </section>
 
-<section id="page3" class="page-section hidden animate-fade-in no-print p-4">
-    <h2 class="text-2xl font-bold text-slate-800 mb-6">ตั้งค่าระบบ (Admin Only)</h2>
+        <section id="page3" class="page-section hidden animate-fade-in no-print">
+            <div class="mb-6 pb-2 border-b border-slate-200 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-sliders text-slate-400 mr-2"></i> ตั้งค่าระบบแอดมิน</h2>
+                <span class="bg-amber-100 text-amber-800 text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm"><i class="fa-solid fa-lock mr-1"></i> Admin Authorization</span>
+            </div>
 
-    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-md mb-6">
-        <h3 class="font-bold text-lg mb-4 text-slate-700">จัดการ QR Code</h3>
-        <div class="flex gap-2 mb-4">
-            <input type="text" id="new-qr-code" placeholder="รหัส (เช่น GT-0002)" class="border p-2 rounded w-1/3">
-            <input type="text" id="new-qr-name" placeholder="ชื่อจุดตรวจ" class="border p-2 rounded w-1/3">
-            <button onclick="addQR()" class="bg-emerald-600 text-white px-4 py-2 rounded">เพิ่ม</button>
-        </div>
-        <table class="w-full text-sm">
-            <tbody id="qr-list-body"></tbody>
-        </table>
-    </div>
+            <div class="flex space-x-2 mb-6 border-b border-slate-200">
+                <button onclick="switchSettingsTab('form')" id="tab-form" class="px-4 py-2 text-sm font-bold border-b-2 border-corporate text-corporate transition-colors">ตั้งค่าพื้นที่และฟอร์ม</button>
+                <button onclick="switchSettingsTab('users')" id="tab-users" class="px-4 py-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors">จัดการผู้ใช้งาน</button>
+            </div>
 
-    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-md mb-6">
-        <h3 class="font-bold text-lg mb-4 text-slate-700">คำถาม Stock Room</h3>
-        <div class="flex gap-2 mb-4">
-            <input type="text" id="new-question" placeholder="พิมพ์คำถามใหม่..." class="border p-2 rounded flex-grow">
-            <button onclick="addQuestion()" class="bg-blue-600 text-white px-4 py-2 rounded">เพิ่ม</button>
-        </div>
-        <ul id="question-list" class="list-disc ml-5"></ul>
-    </div>
+            <div id="settings-form-section" class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md">
+                    <h3 class="text-sm font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100"><i class="fa-solid fa-list-check text-slate-400 mr-2"></i> จัดการหัวข้อคำถาม และ คำตอบ</h3>
+                    <div class="grid grid-cols-2 gap-2 mb-4 text-xs font-medium">
+                        <button onclick="toggleSettingsFormType('gt')" id="btn-set-gt" class="btn-hover py-2.5 px-3 text-center rounded-lg bg-corporate text-white shadow-sm">Guard Tour</button>
+                        <button onclick="toggleSettingsFormType('sr')" id="btn-set-sr" class="btn-hover py-2.5 px-3 text-center rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200">Stock Room</button>
+                    </div>
+                    <div id="settings-questions-list" class="max-h-[600px] overflow-y-auto pr-2 custom-scrollbar"></div>
+                </div>
 
-    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-md">
-        <h3 class="font-bold text-lg mb-4 text-slate-700">จัดการผู้ใช้งาน</h3>
-        <div class="flex gap-2 mb-4">
-            <input type="text" id="new-user" placeholder="Username" class="border p-2 rounded w-1/3">
-            <input type="password" id="new-pass" placeholder="Password" class="border p-2 rounded w-1/3">
-            <button onclick="addUser()" class="bg-slate-700 text-white px-4 py-2 rounded">เพิ่ม</button>
-        </div>
-        <table class="w-full text-sm">
-            <tbody id="user-list-body"></tbody>
-        </table>
-    </div>
-</section>
+                <div class="space-y-6">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md">
+                        <h3 class="text-sm font-bold text-slate-800 mb-3"><i class="fa-solid fa-qrcode text-slate-400 mr-2"></i> คลัง/สร้าง QR Code ติดตั้งพื้นที่</h3>
+                        <button onclick="openQRCreateModal()" class="w-full py-2.5 bg-slate-800 text-slate-200 text-xs font-semibold rounded-lg btn-hover shadow-sm mb-4">
+                            <i class="fa-solid fa-plus mr-1"></i> ออกรหัส QR Code จุดตรวจเพิ่ม
+                        </button>
+                        <div class="grid grid-cols-1 gap-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar" id="qr-list-container"></div>
+                    </div>
+                </div>
+            </div>
 
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-md">
-                    <h3 class="text-lg font-bold text-slate-700 mb-4 flex items-center">
-                        <i class="fa-solid fa-users mr-2 text-safety"></i> จัดการผู้ใช้งาน
-                    </h3>
+            <div id="settings-users-section" class="hidden animate-fade-in">
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-md">
+                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+                        <h3 class="text-sm font-bold text-slate-800"><i class="fa-solid fa-users-gear text-slate-400 mr-2"></i> รายชื่อผู้ใช้งานในระบบ</h3>
+                        <button onclick="openUserModal()" class="btn-hover bg-corporate text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm"><i class="fa-solid fa-user-plus mr-1"></i> เพิ่มผู้ใช้ใหม่</button>
+                    </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-slate-600">
+                        <table class="w-full text-xs text-left text-slate-600">
                             <thead class="bg-slate-50 text-slate-700">
                                 <tr>
-                                    <th class="p-3 border-b">Username</th>
-                                    <th class="p-3 border-b">สิทธิ์การใช้งาน</th>
-                                    <th class="p-3 border-b text-center">จัดการ</th>
+                                    <th class="p-3 border-b border-slate-200">Username</th>
+                                    <th class="p-3 border-b border-slate-200 text-center">ระดับสิทธิ์</th>
+                                    <th class="p-3 border-b border-slate-200 text-center">ดู Dashboard</th>
+                                    <th class="p-3 border-b border-slate-200 text-center">แก้ไขข้อมูล</th>
+                                    <th class="p-3 border-b border-slate-200 text-right">จัดการ</th>
                                 </tr>
                             </thead>
-                            <tbody id="user-list-body">
-                                </tbody>
+                            <tbody id="users-list-body" class="divide-y divide-slate-100"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
-        </section>
+</section>
+
     </main>
 
     <div id="custom-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] flex justify-center items-center hidden no-print animate-fade-in">
@@ -327,7 +326,7 @@
         let html5QrCode = null;
 
         // Configuration
-        let configUsers = [ { id: "u1", username: "admin", password: "123", role: "admin", canViewDashboard: true, canEditDashboard: true } ];
+        let configUsers = [ { id: "u1", username: "admin", password: "20033457", role: "admin", canViewDashboard: true, canEditDashboard: true } ];
         let configShifts = [
             { id: "d1", name: "Day 1 (10:00-12:00)", start: 10, end: 12 }, 
             { id: "d2", name: "Day 2 (15:00-17:00)", start: 15, end: 17 },
@@ -869,6 +868,25 @@ function renderSettings() {
         console.error("Error เปิดกล้อง:", err);
         alert("ไม่สามารถเปิดกล้องได้: " + err);
     });
+}
+// ฟังก์ชันสำหรับสลับแท็บในหน้าการตั้งค่า (คัดลอกมาจาก V1)
+function switchSettingsTab(tabId) {
+    document.getElementById('settings-form-section').classList.add('hidden');
+    document.getElementById('settings-users-section').classList.add('hidden');
+    document.getElementById('tab-form').classList.remove('border-corporate', 'text-corporate');
+    document.getElementById('tab-form').classList.add('border-transparent', 'text-slate-500');
+    document.getElementById('tab-users').classList.remove('border-corporate', 'text-corporate');
+    document.getElementById('tab-users').classList.add('border-transparent', 'text-slate-500');
+    
+    if(tabId === 'form') {
+        document.getElementById('settings-form-section').classList.remove('hidden');
+        document.getElementById('tab-form').classList.remove('border-transparent', 'text-slate-500');
+        document.getElementById('tab-form').classList.add('border-corporate', 'text-corporate');
+    } else {
+        document.getElementById('settings-users-section').classList.remove('hidden');
+        document.getElementById('tab-users').classList.remove('border-transparent', 'text-slate-500');
+        document.getElementById('tab-users').classList.add('border-corporate', 'text-corporate');
+    }
 }
     </script>
 </body>
