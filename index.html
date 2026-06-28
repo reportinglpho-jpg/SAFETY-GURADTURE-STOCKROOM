@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CDS CL : QR SAFETY PATROL</title>
+    <!-- 1. กำหนดชื่อแอปแบบสั้น (ตอนแอดลงหน้าจอมือถือจะได้ชื่อสวยๆ ไม่ถูกตัดคำ) -->
+    <meta name="apple-mobile-web-app-title" content="CDS Guard">
+    <meta name="application-name" content="CDS Guard">
+
+    <!-- 2. กำหนดสีแถบสถานะด้านบนของมือถือ (Theme Color) ให้เข้ากับแอป -->
+    <meta name="theme-color" content="#1e293b"> <!-- เปลี่ยนสีได้ตามต้องการ -->
+
+    <!-- 3. ไอคอนสำหรับหน้าจอมือถือ (Android & ทั่วไป) -->
+    <link rel="icon" type="image/png" sizes="192x192" href="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Security-shield.svg/512px-Security-shield.svg.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Security-shield.svg/512px-Security-shield.svg.png">
+
+    <!-- 4. ไอคอนสำหรับหน้าจอมือถือ (iOS / iPhone / iPad) -->
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Security-shield.svg/512px-Security-shield.svg.png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -307,6 +321,61 @@
             </form>
         </div>
     </div>
+    <!-- Modal: สร้าง QR Code -->
+    <div id="qr-create-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex justify-center items-center hidden no-print animate-fade-in">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">สร้าง QR Code ใหม่</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ประเภทการตรวจ</label>
+                    <select id="qr-input-type" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-800 bg-white">
+                        <option value="guard_tour">Guard Tour (รันรหัส GT-)</option>
+                        <option value="stock_room">Stock Room (รันรหัส ST-)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">รหัสจุดตรวจ (Code)</label>
+                    <input type="text" id="qr-input-code" placeholder="เช่น GT-0005" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm uppercase">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อจุดตรวจ</label>
+                    <input type="text" id="qr-input-name" placeholder="เช่น โซน A" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="closeModal('qr-create-modal')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm rounded-lg font-semibold">ยกเลิก</button>
+                    <button onclick="saveNewQRCode()" class="w-full py-2.5 bg-corporate text-white text-sm rounded-lg font-bold">บันทึก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: เพิ่มผู้ใช้งาน -->
+    <div id="user-create-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex justify-center items-center hidden no-print animate-fade-in">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">เพิ่มผู้ใช้งานใหม่</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Username</label>
+                    <input type="text" id="user-input-name" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+                    <input type="password" id="user-input-pass" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ระดับสิทธิ์ (Role)</label>
+                    <select id="user-input-role" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                        <option value="user">User (ผู้ตรวจทั่วไป)</option>
+                        <option value="admin">Admin (ผู้ดูแลระบบ)</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="closeModal('user-create-modal')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm rounded-lg font-semibold">ยกเลิก</button>
+                    <button onclick="saveNewUser()" class="w-full py-2.5 bg-corporate text-white text-sm rounded-lg font-bold">บันทึก</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="global-loader" class="fixed inset-0 bg-slate-900/50 z-[200] hidden flex-col justify-center items-center">
         <div class="w-12 h-12 border-4 border-slate-300 border-t-amber-400 rounded-full animate-spin mb-3 shadow-lg"></div>
@@ -419,6 +488,8 @@
             currentPageId = pageId;
             if(pageId === 'page2') refreshDashboard();
             if(pageId === 'page1') resetPage1();
+            // เพิ่มบรรทัดนี้ เพื่อให้ระบบเรนเดอร์ข้อมูลตั้งค่าเมื่อเปิดหน้า 3
+            if(pageId === 'page3') renderSettings();
         }
 
         function checkAccessAndNavigate(pageId) {
@@ -794,53 +865,169 @@
             }
             btnContainer.appendChild(okBtn);
         }
-        // --- ฟังก์ชันจัดการ QR Code ---
-function addQR() {
-    let code = document.getElementById('new-qr-code').value;
-    let name = document.getElementById('new-qr-name').value;
-    if(code && name) {
-        configQRs.push({ code: code, name: name, type: 'stock_room' });
-        renderSettings();
-    }
-}
-function deleteQR(idx) { configQRs.splice(idx, 1); renderSettings(); }
+       
+       // =====================================
+        // ระบบจัดการตั้งค่า (Settings Page)
+        // =====================================
 
-// --- ฟังก์ชันจัดการคำถาม ---
-function addQuestion() {
-    let q = document.getElementById('new-question').value;
-    if(q) {
-        configStockRoomQuestions.push(q);
-        renderSettings();
-    }
-}
-function deleteQuestion(idx) { configStockRoomQuestions.splice(idx, 1); renderSettings(); }
+        // 1. ฟังก์ชันเปิด/ปิด Modal
+        function openQRCreateModal() { document.getElementById('qr-create-modal').classList.remove('hidden'); }
+        function openUserModal() { document.getElementById('user-create-modal').classList.remove('hidden'); }
+        function closeModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
 
-// --- ฟังก์ชันจัดการ User ---
-function addUser() {
-    let u = document.getElementById('new-user').value;
-    let p = document.getElementById('new-pass').value;
-    if(u && p) {
-        configUsers.push({ username: u, password: p, role: 'user' });
-        renderSettings();
-        // **สำคัญ:** อย่าลืมเรียกใช้ fetchGAS('saveUsers', configUsers) ที่นี่เพื่อให้ข้อมูลบันทึกลง Sheet
-    }
-}
-function deleteUser(idx) { configUsers.splice(idx, 1); renderSettings(); }
+        // 2. ฟังก์ชันสลับแท็บ "จัดการคำถาม Guard Tour / Stock Room"
+        let currentSettingFormType = 'gt';
+        function toggleSettingsFormType(type) {
+            currentSettingFormType = type;
+            
+            // สลับสีปุ่ม
+            const activeClass = "btn-hover py-2.5 px-3 text-center rounded-lg bg-corporate text-white shadow-sm";
+            const inactiveClass = "btn-hover py-2.5 px-3 text-center rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200";
+            
+            document.getElementById('btn-set-gt').className = type === 'gt' ? activeClass : inactiveClass;
+            document.getElementById('btn-set-sr').className = type === 'sr' ? activeClass : inactiveClass;
+            
+            renderQuestions(); // อัปเดตรายการคำถาม
+        }
 
-// --- ฟังก์ชัน Render หน้าจอ ---
-function renderSettings() {
-    // Render QR
-    let qrBody = document.getElementById('qr-list-body');
-    qrBody.innerHTML = configQRs.map((q, i) => `<tr><td>${q.code}</td><td>${q.name}</td><td><button onclick="deleteQR(${i})" class="text-red-500">ลบ</button></td></tr>`).join('');
-    
-    // Render Questions
-    let qBody = document.getElementById('question-list');
-    qBody.innerHTML = configStockRoomQuestions.map((q, i) => `<li>${q} <button onclick="deleteQuestion(${i})" class="text-red-500 ml-2">ลบ</button></li>`).join('');
-    
-    // Render Users
-    let uBody = document.getElementById('user-list-body');
-    uBody.innerHTML = configUsers.map((u, i) => `<tr><td>${u.username}</td><td><button onclick="deleteUser(${i})" class="text-red-500">ลบ</button></td></tr>`).join('');
-}
+        // 3. ฟังก์ชัน Render ข้อมูลทั้งหมดลงตารางและกล่อง
+        function renderSettings() {
+            renderQuestions();
+            renderQRs();
+            renderUsers();
+        }
+
+        // --- ส่วนจัดการคำถาม (Questions) ---
+        function renderQuestions() {
+            const container = document.getElementById('settings-questions-list');
+            if(!container) return;
+
+            let list = currentSettingFormType === 'gt' ? configGuardTourAnswers : configStockRoomQuestions;
+            
+            // กล่องเพิ่มคำถาม
+            let html = `<div class="flex space-x-2 mb-4">
+                <input type="text" id="new-question-input" placeholder="พิมพ์เพิ่มหัวข้อ/คำตอบ..." class="flex-grow px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 outline-none">
+                <button onclick="saveNewQuestion()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm"><i class="fa-solid fa-plus"></i></button>
+            </div><div class="space-y-2">`;
+            
+            // รายการคำถาม
+            list.forEach((q, idx) => {
+                html += `<div class="flex justify-between items-center p-3 bg-slate-50 border border-slate-200 rounded-lg shadow-sm">
+                    <span class="text-sm text-slate-700">${q}</span>
+                    <button onclick="deleteQuestion(${idx})" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash-can"></i></button>
+                </div>`;
+            });
+            
+            container.innerHTML = html + `</div>`;
+        }
+
+        function saveNewQuestion() {
+            let input = document.getElementById('new-question-input');
+            let val = input.value.trim();
+            if(val) {
+                if(currentSettingFormType === 'gt') configGuardTourAnswers.push(val);
+                else configStockRoomQuestions.push(val);
+                renderQuestions();
+            }
+        }
+
+        function deleteQuestion(idx) {
+            if(confirm("ต้องการลบรายการนี้ใช่หรือไม่?")) {
+                if(currentSettingFormType === 'gt') configGuardTourAnswers.splice(idx, 1);
+                else configStockRoomQuestions.splice(idx, 1);
+                renderQuestions();
+            }
+        }
+
+        // --- ส่วนจัดการ QR Code ---
+        function renderQRs() {
+            const container = document.getElementById('qr-list-container');
+            if(!container) return;
+            
+            container.innerHTML = configQRs.map((q, idx) => `
+                <div class="flex justify-between items-center p-3 bg-white border border-slate-200 rounded-lg shadow-sm hover:border-corporate transition-colors">
+                    <div>
+                        <div class="font-bold text-sm text-slate-800">${q.code} <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-1">${q.type === 'guard_tour' ? 'GT' : 'SR'}</span></div>
+                        <div class="text-xs text-slate-500 mt-0.5">${q.name}</div>
+                    </div>
+                    <button onclick="deleteQR(${idx})" class="text-slate-400 hover:text-rose-500 p-2"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function saveNewQRCode() {
+            let type = document.getElementById('qr-input-type').value;
+            let code = document.getElementById('qr-input-code').value.trim().toUpperCase();
+            let name = document.getElementById('qr-input-name').value.trim();
+            
+            if(code && name) {
+                configQRs.push({ code: code, name: name, type: type, detail: "-" });
+                closeModal('qr-create-modal');
+                renderQRs();
+                document.getElementById('qr-input-code').value = '';
+                document.getElementById('qr-input-name').value = '';
+            } else {
+                showCustomAlert("กรุณากรอกรหัสและชื่อจุดตรวจให้ครบ", "warning");
+            }
+        }
+
+        function deleteQR(idx) {
+            if(confirm("ยืนยันการลบ QR Code นี้?")) {
+                configQRs.splice(idx, 1);
+                renderQRs();
+            }
+        }
+
+        // --- ส่วนจัดการผู้ใช้งาน (Users) ---
+        function renderUsers() {
+            const tbody = document.getElementById('users-list-body'); // ต้องมี 's' ตรงกับ HTML ของ V2
+            if(!tbody) return;
+            
+            tbody.innerHTML = configUsers.map((u, idx) => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-3 border-b border-slate-100 font-medium text-slate-700">${u.username}</td>
+                    <td class="p-3 border-b border-slate-100 text-center">
+                        <span class="px-2 py-1 rounded-md text-[10px] font-bold ${u.role === 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}">${u.role.toUpperCase()}</span>
+                    </td>
+                    <td class="p-3 border-b border-slate-100 text-center">${u.canViewDashboard ? '<i class="fa-solid fa-check text-emerald-500"></i>' : '<i class="fa-solid fa-minus text-slate-300"></i>'}</td>
+                    <td class="p-3 border-b border-slate-100 text-center">${u.canEditDashboard ? '<i class="fa-solid fa-check text-emerald-500"></i>' : '<i class="fa-solid fa-minus text-slate-300"></i>'}</td>
+                    <td class="p-3 border-b border-slate-100 text-right">
+                        ${u.username !== 'admin' ? `<button onclick="deleteUser(${idx})" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>` : `<span class="text-xs text-slate-300">Default</span>`}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function saveNewUser() {
+            let u = document.getElementById('user-input-name').value.trim();
+            let p = document.getElementById('user-input-pass').value.trim();
+            let r = document.getElementById('user-input-role').value;
+            
+            if(u && p) {
+                configUsers.push({ 
+                    id: "u" + Math.floor(Math.random()*1000), 
+                    username: u, 
+                    password: p, 
+                    role: r, 
+                    canViewDashboard: true, 
+                    canEditDashboard: (r === 'admin') 
+                });
+                closeModal('user-create-modal');
+                renderUsers();
+                document.getElementById('user-input-name').value = '';
+                document.getElementById('user-input-pass').value = '';
+                // fetchGAS('saveUsers', configUsers); // ปลดคอมเมนต์ถ้ามีการบันทึกลง Sheet
+            } else {
+                showCustomAlert("กรุณากรอก Username และ Password", "warning");
+            }
+        }
+
+        function deleteUser(idx) {
+            if(confirm("ยืนยันการลบผู้ใช้งานนี้?")) {
+                configUsers.splice(idx, 1);
+                renderUsers();
+            }
+        }
 
 // เรียกใช้ทุกครั้งที่กดเข้าหน้า Page 3
 // ในฟังก์ชัน navigateTo(pageId) ให้เพิ่ม: if(pageId === 'page3') renderSettings();
