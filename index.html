@@ -877,9 +877,14 @@ async function handleFormSubmit(e) {
                 }
             }
 
+            // บังคับแปลงเวลาเป็น Time Zone ประเทศไทย (Asia/Bangkok) เสมอ
+            let tzOptions = { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            let formatter = new Intl.DateTimeFormat('en-GB', tzOptions);
+            let timestampTH = formatter.format(new Date()).replace(',', '');
+
             let newLog = {
                 id: Math.random().toString(36).substr(2, 9),
-                timestamp: new Date().toLocaleString('th-TH'),
+                timestamp: timestampTH, // ใช้เวลาที่ถูกบังคับเป็นไทยแล้ว
                 businessDate: bizDateStr, type: currentPatrolType,
                 inspector: document.getElementById('form-inspector-name').value,
                 shiftId: shiftId, summary: summaryStr
@@ -1736,44 +1741,63 @@ async function saveEditedRecord() {
         return;
     }
 
-    // กำหนดข้อความสรุปผล
+    // --- เพิ่มลูกเล่น Loading Spinner เปลี่ยนปุ่มและปิดการกดซ้ำ ---
+    let saveBtn = document.querySelector('#edit-record-modal-content button.bg-corporate');
+    let originalBtnHTML = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังบันทึก...';
+    saveBtn.disabled = true;
+    saveBtn.classList.add('opacity-75', 'cursor-not-allowed');
+    // --------------------------------------------------------
+
     let summaryStr = newStatus === 'มีการตรวจ' ? 'เหตุการณ์ปกติ' : newIssue;
     if (currentEditData.type === 'stock_room' && newStatus === 'มีการตรวจ') {
         summaryStr = 'ตรวจสอบแล้วปกติทุกหัวข้อ';
     }
 
-    // สร้าง timestamp ใหม่
     let timestampStr = `${currentEditData.date} ${newTime}:00`;
 
-    if (currentEditData.logId) {
-        // อัปเดตข้อมูลเดิม
-        let logIndex = submissionLogs.findIndex(l => l.id === currentEditData.logId);
-        if (logIndex !== -1) {
-            submissionLogs[logIndex].timestamp = timestampStr;
-            submissionLogs[logIndex].summary = summaryStr;
-            submissionLogs[logIndex].inspector += " (Edited)";
-            
-            // หมายเหตุ: หาก Backend (GAS) ของคุณมีระบบอัปเดตข้อมูล สามารถยิง API ตรงนี้ได้
-            // await fetchGAS("updateLog", submissionLogs[logIndex]);
+    try {
+        if (currentEditData.logId) {
+            // อัปเดตข้อมูลเดิม
+            let logIndex = submissionLogs.findIndex(l => l.id === currentEditData.logId);
+            if (logIndex !== -1) {
+                submissionLogs[logIndex].timestamp = timestampStr;
+                submissionLogs[logIndex].summary = summaryStr;
+                if(!submissionLogs[logIndex].inspector.includes("(Edited)")) {
+                    submissionLogs[logIndex].inspector += " (Edited)";
+                }
+                
+                // ยิง API ไปอัปเดตข้อมูลบน Google Sheets
+                await fetchGAS("updateLog", submissionLogs[logIndex]);
+            }
+        } else {
+            // สร้างข้อมูลใหม่ (บันทึกย้อนหลัง)
+            let newLog = {
+                id: Math.random().toString(36).substr(2, 9),
+                timestamp: timestampStr,
+                businessDate: currentEditData.date,
+                type: currentEditData.type,
+                inspector: (loggedInUser ? loggedInUser.username : 'Admin') + " (Added)",
+                shiftId: currentEditData.shiftId,
+                summary: summaryStr
+            };
+            submissionLogs.unshift(newLog); 
+            await fetchGAS("saveLog", newLog);
         }
-    } else {
-        // สร้างข้อมูลใหม่ (บันทึกย้อนหลัง)
-        let newLog = {
-            id: Math.random().toString(36).substr(2, 9),
-            timestamp: timestampStr,
-            businessDate: currentEditData.date,
-            type: currentEditData.type,
-            inspector: (loggedInUser ? loggedInUser.username : 'Admin') + " (Added)",
-            shiftId: currentEditData.shiftId,
-            summary: summaryStr
-        };
-        submissionLogs.unshift(newLog); // นำไปไว้บนสุด
-        await fetchGAS("saveLog", newLog); // ส่งเข้า Google Sheets
-    }
 
-    closeEditRecordModal();
-    showCustomAlert('บันทึกการแก้ไขสำเร็จ!', 'success');
-    refreshDashboard(); // โหลดตารางใหม่
+        closeEditRecordModal();
+        showCustomAlert('บันทึกการแก้ไขสำเร็จ!', 'success');
+        refreshDashboard();
+
+    } catch (error) {
+        showCustomAlert('พบข้อผิดพลาดในการเชื่อมต่อ', 'error');
+        console.error(error);
+    } finally {
+        // --- คืนค่าปุ่มกลับเป็นเหมือนเดิม เมื่อทำงานเสร็จสิ้น ---
+        saveBtn.innerHTML = originalBtnHTML;
+        saveBtn.disabled = false;
+        saveBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+    }
 }
 
     </script>
