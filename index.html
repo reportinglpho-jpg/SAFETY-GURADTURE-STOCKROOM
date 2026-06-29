@@ -999,6 +999,15 @@ async function handleFormSubmit(e) {
                             let clickAction = canEdit ?
                             `onclick="openEditRecordModal('${logFound.id}', '${dateStr}', '${shift.id}', '${type}')" class="cursor-pointer hover:bg-rose-100 ${cellClass} text-rose-500 bg-rose-50/70"` : `class="${cellClass} text-rose-500 bg-rose-50/70"`;
                             tr += `<td ${clickAction} title="${canEdit ? 'คลิกเพื่อแก้ไขข้อมูล' : 'ไม่มีการตรวจ'}"><i class="fa-solid fa-xmark"></i></td>`;
+                            }
+                    } else {
+                        // เพิ่มส่วนนี้: สร้างช่องว่างสำหรับวันที่ไม่มีการตรวจ
+                        let clickAction = canEdit ?
+                        `onclick="openEditRecordModal('', '${dateStr}', '${shift.id}', '${type}')" class="cursor-pointer hover:bg-slate-200 ${cellClass} bg-white"` : `class="${cellClass} bg-white"`;
+                        
+                        // ใช้เครื่องหมายขีด (-) เพื่อให้ดูรู้ว่าเป็นช่องว่าง
+                        tr += `<td ${clickAction} title="${canEdit ? 'คลิกเพื่อเพิ่มข้อมูลย้อนหลัง' : 'ไม่มีข้อมูล'}">-</td>`;
+                    }
                         }
                     }
                 }
