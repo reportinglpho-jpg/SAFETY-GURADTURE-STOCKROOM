@@ -12,11 +12,11 @@
     <meta name="theme-color" content="#1e293b"> <!-- เปลี่ยนสีได้ตามต้องการ -->
 
     <!-- 3. ไอคอนสำหรับหน้าจอมือถือ (Android & ทั่วไป) -->
-    <link rel="icon" type="image/png" sizes="192x192" href="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Security-shield.svg/512px-Security-shield.svg.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Security-shield.svg/512px-Security-shield.svg.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="https://drive.google.com/file/d/140hbhZR7ey0MzhHkOzWeQZc7TYnZmiQB/view?usp=sharing">
+    <link rel="icon" type="image/png" sizes="512x512" href="https://drive.google.com/file/d/140hbhZR7ey0MzhHkOzWeQZc7TYnZmiQB/view?usp=sharing">
 
     <!-- 4. ไอคอนสำหรับหน้าจอมือถือ (iOS / iPhone / iPad) -->
-    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Security-shield.svg/512px-Security-shield.svg.png">
+    <link rel="apple-touch-icon" href="https://drive.google.com/file/d/140hbhZR7ey0MzhHkOzWeQZc7TYnZmiQB/view?usp=sharing">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -341,6 +341,10 @@
                     <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อจุดตรวจ</label>
                     <input type="text" id="qr-input-name" placeholder="เช่น โซน A" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
                 </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">สถานที่ติดตั้ง</label>
+                    <input type="text" id="qr-input-detail" placeholder="เช่น ประตูทางเข้าหลัก" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                </div>
                 <div class="grid grid-cols-2 gap-3 pt-2">
                     <button onclick="closeModal('qr-create-modal')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm rounded-lg font-semibold">ยกเลิก</button>
                     <button onclick="saveNewQRCode()" class="w-full py-2.5 bg-corporate text-white text-sm rounded-lg font-bold">บันทึก</button>
@@ -365,9 +369,20 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">ระดับสิทธิ์ (Role)</label>
                     <select id="user-input-role" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
-                        <option value="user">User (ผู้ตรวจทั่วไป)</option>
+                        <option value="user">User (ผู้ใช้งานทั่วไป)</option>
                         <option value="admin">Admin (ผู้ดูแลระบบ)</option>
                     </select>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <p class="text-xs font-bold text-slate-700 mb-2">กำหนดสิทธิ์ย่อย:</p>
+                    <label class="flex items-center space-x-2 mb-1">
+                        <input type="checkbox" id="user-perm-view" class="w-3.5 h-3.5 accent-corporate">
+                        <span class="text-xs text-slate-600">สิทธิ์ในการดูหน้าแดชบอร์ด</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" id="user-perm-edit" class="w-3.5 h-3.5 accent-corporate">
+                        <span class="text-xs text-slate-600">สิทธิ์ในการแก้ไขผลตารางแดชบอร์ด</span>
+                    </label>
                 </div>
                 <div class="grid grid-cols-2 gap-3 pt-2">
                     <button onclick="closeModal('user-create-modal')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm rounded-lg font-semibold">ยกเลิก</button>
@@ -382,11 +397,114 @@
         <p class="text-white font-bold tracking-wider animate-pulse">กำลังประมวลผลฐานข้อมูล...</p>
     </div>
 
+<div id="qr-view-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-fade-in">
+            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-slate-800" id="view-qr-title">ชื่อจุดตรวจ</h3>
+                <button onclick="closeModal('qr-view-modal')" class="text-slate-400 hover:text-rose-500 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 text-center">
+                <img id="view-qr-img" src="" alt="QR Code" class="mx-auto w-48 h-48 border-4 border-slate-100 rounded-xl mb-4 object-contain shadow-sm">
+                <p id="view-qr-detail" class="text-sm text-slate-600 whitespace-pre-line font-medium"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="qr-edit-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in">
+            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-slate-800"><i class="fa-solid fa-pen-to-square text-amber-500 mr-2"></i>แก้ไขข้อมูลจุดตรวจ</h3>
+                <button onclick="closeModal('qr-edit-modal')" class="text-slate-400 hover:text-rose-500 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-4">
+                <input type="hidden" id="edit-qr-idx">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">รหัสจุดตรวจ (Code)</label>
+                    <input type="text" id="edit-qr-code" disabled class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-100 text-slate-400 cursor-not-allowed">
+                    <p class="text-[10px] text-slate-400 mt-1">* ไม่อนุญาตให้แก้ไขรหัสเพื่อป้องกันข้อมูลประวัติสูญหาย</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อจุดตรวจ (Name)</label>
+                    <input type="text" id="edit-qr-name" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-corporate outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">สถานที่/รายละเอียด (Detail)</label>
+                    <input type="text" id="edit-qr-detail" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-corporate outline-none transition-all">
+                </div>
+            </div>
+            <div class="p-4 border-t border-slate-100 flex justify-end space-x-3 bg-slate-50">
+                <button onclick="closeModal('qr-edit-modal')" class="px-5 py-2.5 text-sm text-slate-600 font-bold hover:bg-slate-200 rounded-lg transition-colors">ยกเลิก</button>
+                <button onclick="saveEditQRCode()" class="px-5 py-2.5 text-sm text-white font-bold bg-amber-500 hover:bg-amber-600 rounded-lg shadow-md transition-colors"><i class="fa-solid fa-floppy-disk mr-2"></i>บันทึกการแก้ไข</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-record-modal" class="fixed inset-0 bg-slate-900/60 hidden z-50 flex items-center justify-center backdrop-blur-sm transition-opacity duration-300 opacity-0">
+        <div class="bg-white rounded-2xl w-11/12 md:w-1/2 lg:w-1/3 shadow-2xl transform scale-95 transition-all duration-300 overflow-hidden" id="edit-record-modal-content">
+            
+            <div class="bg-corporate text-white px-6 py-4 flex justify-between items-center">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <i class="fas fa-edit"></i> <span id="edit-modal-title">แก้ไขผลการตรวจ</span>
+                </h3>
+                <button onclick="closeEditRecordModal()" class="text-white/80 hover:text-white transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="edit-location">
+                <input type="hidden" id="edit-date">
+                <input type="hidden" id="edit-original-time">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">จุดตรวจ</label>
+                        <div id="edit-location-display" class="w-full border border-gray-200 rounded-lg p-2.5 bg-gray-50 text-gray-600 font-medium text-sm"></div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">วันที่</label>
+                        <div id="edit-date-display" class="w-full border border-gray-200 rounded-lg p-2.5 bg-gray-50 text-gray-600 font-medium text-sm"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">เวลาที่ตรวจ <span class="text-red-500">*</span></label>
+                        <input type="time" id="edit-time" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-corporate focus:border-corporate text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">สถานะ <span class="text-red-500">*</span></label>
+                        <select id="edit-status" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-corporate focus:border-corporate text-sm font-medium" onchange="toggleEditIssue()">
+                            <option value="ปกติ" class="text-green-600">ปกติ</option>
+                            <option value="ผิดปกติ" class="text-red-600">ผิดปกติ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="edit-issue-container" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">รายละเอียดปัญหา</label>
+                    <textarea id="edit-issue" rows="3" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-corporate focus:border-corporate text-sm placeholder-gray-400" placeholder="ระบุสิ่งที่พบเจอ..."></textarea>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 bg-gray-50 flex justify-end gap-3 border-t">
+                <button onclick="closeEditRecordModal()" class="px-5 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm">ยกเลิก</button>
+                <button onclick="saveEditedRecord()" class="px-5 py-2 bg-corporate text-white font-medium rounded-lg hover:bg-blue-800 transition-colors shadow-sm hover:shadow flex items-center gap-2 text-sm">
+                    <i class="fas fa-save"></i> บันทึกข้อมูล
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // =====================================
         // URL WEB APP ที่ได้จากฝั่ง GOOGLE APPS SCRIPT
         // =====================================
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxYviGZ935dZHw0BXzCTJ9RQaUl4GMfODI4BZkERxrD1E6ujU-LQfIuJAtmVaRnkoPj/exec"; 
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzkX7mbYVnHZY4RKRoDb47aygETtJWJ8wDa64q4M-Z3OI7gdHvJ612jZrV6d0PFJx8k/exec"; 
 
         // Data Setup
         let currentPatrolType = '';
@@ -406,8 +524,21 @@
             { code: "GT-0001", name: "Guard Tour โซน A", detail: "บริเวณหน้าประตูทางเข้าหลัก", type: "guard_tour" },
             { code: "ST-0001", name: "Stock Room หลัก", detail: "ชั้น 2 ห้องเก็บสต๊อก", type: "stock_room" }
         ];
-        let configGuardTourAnswers = ["เหตุการณ์ปกติ", "พบสิ่งผิดปกติ"];
-        let configStockRoomQuestions = []; // ลบคำถามจำลองออกตามความต้องการ 
+        let configGuardTourQuestions = [
+    { id: 1, text: "ผลการตรวจสอบสภาพความปลอดภัยทั่วไป", options: ["เหตุการณ์ปกติ", "พบสิ่งผิดปกติ"] }
+];
+        let configStockRoomQuestions = [
+            { id: 1, text: "การจัดวางสินค้า หรือสิ่งของห่างจากหลอดไฟ อย่างน้อย 30 ซม.", options: ["ไม่พบปัญหา", "พบปัญหา"] },
+            { id: 2, text: "การจัดวางสินค้า หรือสิ่งของห่างจากหัว Sprinkler อย่างน้อย 45 ซม.", options: ["ไม่พบปัญหา", "พบปัญหา"] },
+            { id: 3, text: "มาตรการจัดวางกล่องสินค้าภายในห้อง Stock", options: ["ไม่พบสินค้าวากับพื้น", "พบสินค้าวางกับพื้น"] },
+            { id: 4, text: "มาตรฐานการเดิน หรือต่อสายไฟชั่วคราว", options: ["ปลอดภัย", "ไม่ปลอดภัย"] },
+            { id: 5, text: "จุดติดตั้งเครื่องดับชนิดมือถือ", options: ["ถูกต้อง", "ถูกเคลื่อนย้าย หรือ ถูกสิ่งของวางกีดขวาง", "ไม่มีการติดตั้ง"] },
+            { id: 6, text: "ไฟฉายสามารถใช้งานได้อย่างมีประสิทธิภาพ", options: ["ใช้งานได้", "ไม่สามารถใช้งานได้", "ไม่มีการติดตั้ง"] },
+            { id: 7, text: "มาตรฐานการปิดล็อคประตูห้อง Stock และ Stock ลูกกรง (Credit / Consignment)", options: ["ถูกต้อง", "ไม่ถูกต้อง", "ได้รับการยกเว้นไม่ให้ปิดล็อก"] },
+            { id: 8, text: "ตรวจสอบพบถุงสินค้า หรือถุงแบรนด์ภายในห้อง Stock", options: ["ตรวจสอบไม่พบ", "ตรวจสอบพบ"] },
+            { id: 9, text: "สินค้าชำรุดส่งเคลม / สินค้าส่งทำลาย หรือสินค้าที่ลูกค้าฝากไม่มีมีเอกสารควบคุม", options: ["ตรวจสอบไม่พบ", "ตรวจสอบพบ"] },
+            { id: 10, text: "ตรวจสอบพบอาหาร หรือสิ่งแปลกปลอมภายในห้อง Stock", options: ["ตรวจสอบไม่พบ", "ตรวจสอบพบ"] }
+        ];
         let submissionLogs = [];
 
         window.onload = function() {
@@ -421,8 +552,8 @@
         function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); document.getElementById('global-loader').classList.remove('flex'); }
 
         async function fetchGAS(action, data = null) {
-            if(WEB_APP_URL === "https://script.google.com/macros/s/AKfycbxYviGZ935dZHw0BXzCTJ9RQaUl4GMfODI4BZkERxrD1E6ujU-LQfIuJAtmVaRnkoPj/exec") {
-                console.warn("https://script.google.com/macros/s/AKfycbxYviGZ935dZHw0BXzCTJ9RQaUl4GMfODI4BZkERxrD1E6ujU-LQfIuJAtmVaRnkoPj/exec");
+            if(WEB_APP_URL === "https://script.google.com/macros/s/AKfycbzkX7mbYVnHZY4RKRoDb47aygETtJWJ8wDa64q4M-Z3OI7gdHvJ612jZrV6d0PFJx8k/exec") {
+                console.warn("https://script.google.com/macros/s/AKfycbzkX7mbYVnHZY4RKRoDb47aygETtJWJ8wDa64q4M-Z3OI7gdHvJ612jZrV6d0PFJx8k/exec");
                 return null;
             }
             try {
@@ -631,25 +762,53 @@
             }, 800);
         }
 
-        function generateDynamicQuestions() {
+  function generateDynamicQuestions() {
             const container = document.getElementById('dynamic-questions');
             container.innerHTML = '';
+            
             if(currentPatrolType === 'guard_tour') {
-                let html = `<div class="p-5 bg-slate-50 border border-slate-200 rounded-xl mb-3 shadow-sm">
-                    <p class="text-sm font-bold text-slate-800 mb-3"><i class="fa-solid fa-circle-question mr-1.5 text-corporate"></i> ผลการตรวจสอบสภาพความปลอดภัยทั่วไป</p>
-                    <div class="grid grid-cols-1 gap-2 text-xs">`;
-                configGuardTourAnswers.forEach((ans) => {
-                    html += `<label class="flex items-start space-x-2 p-2.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-100 hover:border-slate-300 cursor-pointer transition-colors shadow-sm">
-                        <input type="checkbox" name="gt_ans" value="${ans}" class="mt-0.5 w-4 h-4 accent-corporate rounded">
-                        <span class="text-slate-700 text-sm leading-tight">${ans}</span>
-                    </label>`;
+                // โครงสร้างฟอร์มสำหรับ Guard Tour รองรับหลายคำถามและเลือกได้หลายข้อ (Checkbox)
+                let html = '';
+                configGuardTourQuestions.forEach((q, idx) => {
+                    html += `<div class="p-5 bg-slate-50 border border-slate-200 rounded-xl mb-3 shadow-sm">
+                        <p class="text-sm font-bold text-slate-800 mb-3"><i class="fa-solid fa-circle-question mr-1.5 text-corporate"></i> ${idx + 1}. ${q.text}</p>
+                        <div class="grid grid-cols-1 gap-2 text-xs">`;
+                    
+                    q.options.forEach((ans) => {
+                        html += `<label class="flex items-start space-x-2 p-2.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-100 hover:border-slate-300 cursor-pointer transition-colors shadow-sm">
+                            <input type="checkbox" name="gt_ans_${idx}" value="${ans}" class="mt-0.5 w-4 h-4 accent-corporate rounded">
+                            <span class="text-slate-700 text-sm leading-tight">${ans}</span>
+                        </label>`;
+                    });
+                    html += `</div></div>`;
                 });
-                html += `</div></div>`;
                 container.innerHTML = html;
-            } 
+                
+            } else if (currentPatrolType === 'stock_room') {
+                // โครงสร้างฟอร์มสำหรับ Stock Room (แบบ Radio Button เลือกได้ข้อละ 1 คำตอบ)
+                let html = '';
+                configStockRoomQuestions.forEach((q, idx) => {
+                    let qText = q.text || q; // รองรับข้อมูลทั้งแบบเก่าและใหม่
+                    let qOptions = q.options || ["ไม่พบปัญหา", "พบปัญหา"];
+                    
+                    html += `<div class="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-3 shadow-sm">
+                        <p class="text-sm font-bold text-slate-800 mb-3">${idx + 1}. ${qText} <span class="text-rose-500">*</span></p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">`;
+                    
+                    qOptions.forEach((opt) => {
+                        html += `<label class="flex items-start space-x-2 p-2.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-100 hover:border-slate-300 cursor-pointer transition-colors shadow-sm">
+                            <input type="radio" required name="sr_ans_${idx}" value="${opt}" class="mt-0.5 w-4 h-4 accent-corporate rounded">
+                            <span class="text-slate-700 text-sm leading-tight">${opt}</span>
+                        </label>`;
+                    });
+                    
+                    html += `</div></div>`;
+                });
+                container.innerHTML = html;
+            }
         }
 
-        async function handleFormSubmit(e) {
+async function handleFormSubmit(e) {
             e.preventDefault();
             
             // --- TIME VALIDATION LOGIC FOR NIGHT SHIFTS (ส่งผลไม่เกิน 07:00 ของวันถัดไป) ---
@@ -675,15 +834,45 @@
             submitBtn.disabled = true;
 
             let summaryStr = "เหตุการณ์ปกติ";
+            
+            // แยกวิธีการอ่านคำตอบระหว่าง Guard Tour และ Stock Room
             if(currentPatrolType === 'guard_tour') {
                 let items = [];
-                document.querySelectorAll('input[name="gt_ans"]:checked').forEach(b => items.push(b.value));
+                configGuardTourQuestions.forEach((q, idx) => {
+                    let checkedBoxes = document.querySelectorAll(`input[name="gt_ans_${idx}"]:checked`);
+                    let selectedValues = Array.from(checkedBoxes).map(b => b.value);
+                    if (selectedValues.length > 0) {
+                        items.push(`${q.text}: ${selectedValues.join(', ')}`);
+                    }
+                });
+
                 if(items.length === 0) { 
-                    showCustomAlert('กรุณาเลือกผลการตรวจสอบอย่างน้อย 1 รายการ', 'warning');
+                    showCustomAlert('กรุณาเลือกผลการตรวจสอบอย่างน้อย 1 รายการ (อย่างน้อย 1 ข้อ)', 'warning');
                     submitBtn.innerHTML = originalBtnHTML; submitBtn.disabled = false; return;
                 }
-                summaryStr = items.join(', ');
-            } 
+                summaryStr = items.join(' | ');
+                
+            } else if (currentPatrolType === 'stock_room') {
+                let problemItems = [];
+                // ลูปเก็บข้อมูลคำตอบของ Stock Room ทีละข้อ
+                configStockRoomQuestions.forEach((q, idx) => {
+                    let selected = document.querySelector(`input[name="sr_ans_${idx}"]:checked`);
+                    if(selected) {
+                        // สมมติว่าคำตอบข้อแรกสุดของแต่ละคำถามคือ "สถานะปกติ" หากเลือกคำตอบอื่นให้ถือว่าพบปัญหา
+                        let normalOption = q.options ? q.options[0] : "ปลอดภัย";
+                        if(selected.value !== normalOption) {
+                            problemItems.push(`ข้อ ${idx+1}: ${selected.value}`);
+                        }
+                    }
+                });
+                
+                // นำสรุปไปแสดงใน Dashboard
+                if (problemItems.length > 0) {
+                    summaryStr = "พบปัญหา - " + problemItems.join(' | ');
+                } else {
+                    summaryStr = "ตรวจสอบแล้วปกติทุกหัวข้อ";
+                }
+            }
 
             let newLog = {
                 id: Math.random().toString(36).substr(2, 9),
@@ -763,10 +952,14 @@
                     
                     if (logFound) {
                         if(isShiftEnded) countChecked++;
-                        tr += `<td class="${cellClass} text-emerald-500 bg-emerald-50/70" title="ตรวจแล้ว"><i class="fa-solid fa-check"></i></td>`;
+                        // เพิ่ม onclick หากมีสิทธิ์แก้ไข
+                        let clickAction = canEdit ? `onclick="openEditRecordModal('${logFound.id}', '${dateStr}', '${shift.id}', '${type}')" class="cursor-pointer hover:bg-emerald-100 ${cellClass} text-emerald-500 bg-emerald-50/70"` : `class="${cellClass} text-emerald-500 bg-emerald-50/70"`;
+                        tr += `<td ${clickAction} title="${canEdit ? 'คลิกเพื่อแก้ไขข้อมูล' : 'ตรวจแล้ว'}"><i class="fa-solid fa-check"></i></td>`;
                     } else {
                         if (isShiftEnded) { 
-                            tr += `<td class="${cellClass} text-rose-500 bg-rose-50/70" title="ไม่พบผลตรวจ"><i class="fa-solid fa-xmark"></i></td>`;
+                            // เพิ่ม onclick เพื่อให้กรอกย้อนหลังได้
+                            let clickAction = canEdit ? `onclick="openEditRecordModal(null, '${dateStr}', '${shift.id}', '${type}')" class="cursor-pointer hover:bg-rose-100 ${cellClass} text-rose-500 bg-rose-50/70"` : `class="${cellClass} text-rose-500 bg-rose-50/70"`;
+                            tr += `<td ${clickAction} title="${canEdit ? 'คลิกเพื่อลงผลย้อนหลัง' : 'ไม่พบผลตรวจ'}"><i class="fa-solid fa-xmark"></i></td>`;
                         } else { 
                             // หากรอบการตรวจยังไม่หมดเวลา ให้ใส่ขีด -
                             tr += `<td class="${cellClass} text-slate-400 font-bold bg-slate-50/50" title="ยังไม่หมดเวลา">-</td>`;
@@ -865,6 +1058,93 @@
             }
             btnContainer.appendChild(okBtn);
         }
+
+        function customConfirm(message) {
+            return new Promise((resolve) => {
+                document.getElementById('custom-modal').classList.remove('hidden');
+                let iconDiv = document.getElementById('modal-icon-bg');
+                let iconElement = document.getElementById('modal-icon');
+                let titleElement = document.getElementById('modal-title');
+                let btnContainer = document.getElementById('modal-buttons');
+                let messageElement = document.getElementById('modal-message');
+                
+                iconDiv.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-amber-100 text-amber-500";
+                iconElement.className = "fa-solid fa-circle-question";
+                titleElement.innerText = "ยืนยันการทำรายการ";
+                messageElement.innerHTML = message;
+                
+                btnContainer.innerHTML = '';
+                
+                let cancelBtn = document.createElement('button');
+                cancelBtn.className = "w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm rounded-lg font-bold transition-all";
+                cancelBtn.innerText = "ยกเลิก";
+                cancelBtn.onclick = () => { 
+                    document.getElementById('custom-modal').classList.add('hidden'); 
+                    resolve(false); 
+                };
+                
+                let okBtn = document.createElement('button');
+                okBtn.className = "w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm rounded-lg font-bold shadow-md transition-all";
+                okBtn.innerText = "ตกลง";
+                okBtn.onclick = () => { 
+                    document.getElementById('custom-modal').classList.add('hidden'); 
+                    resolve(true); 
+                };
+                
+                btnContainer.appendChild(cancelBtn);
+                btnContainer.appendChild(okBtn);
+            });
+        }
+
+        function customPrompt(message, defaultValue = "") {
+            return new Promise((resolve) => {
+                document.getElementById('custom-modal').classList.remove('hidden');
+                let iconDiv = document.getElementById('modal-icon-bg');
+                let iconElement = document.getElementById('modal-icon');
+                let titleElement = document.getElementById('modal-title');
+                let btnContainer = document.getElementById('modal-buttons');
+                let messageElement = document.getElementById('modal-message');
+                
+                iconDiv.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-blue-100 text-blue-500";
+                iconElement.className = "fa-solid fa-pen-to-square";
+                titleElement.innerText = "กรอกข้อมูล";
+                
+                // สร้างช่อง Input ใส่ลงไปใน Modal
+                messageElement.innerHTML = `<div class="mb-2 text-slate-600 font-semibold">${message}</div>
+                                            <input type="text" id="custom-prompt-input" value="${defaultValue}" class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-corporate shadow-sm transition-all text-slate-800 font-medium">`;
+                
+                btnContainer.innerHTML = '';
+                
+                let cancelBtn = document.createElement('button');
+                cancelBtn.className = "w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm rounded-lg font-bold transition-all";
+                cancelBtn.innerText = "ยกเลิก";
+                cancelBtn.onclick = () => { 
+                    document.getElementById('custom-modal').classList.add('hidden'); 
+                    resolve(null); 
+                };
+                
+                let okBtn = document.createElement('button');
+                okBtn.className = "w-full py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg font-bold shadow-md transition-all";
+                okBtn.innerText = "บันทึก";
+                okBtn.onclick = () => { 
+                    let val = document.getElementById('custom-prompt-input').value;
+                    document.getElementById('custom-modal').classList.add('hidden'); 
+                    resolve(val); 
+                };
+                
+                btnContainer.appendChild(cancelBtn);
+                btnContainer.appendChild(okBtn);
+
+                // ให้เคอร์เซอร์ไปกระพริบรอที่ช่องกรอกอัตโนมัติ
+                setTimeout(() => {
+                    let inputEl = document.getElementById('custom-prompt-input');
+                    if(inputEl) {
+                        inputEl.focus();
+                        inputEl.selectionStart = inputEl.selectionEnd = inputEl.value.length;
+                    }
+                }, 100);
+            });
+        }
        
        // =====================================
         // ระบบจัดการตั้งค่า (Settings Page)
@@ -898,74 +1178,271 @@
         }
 
         // --- ส่วนจัดการคำถาม (Questions) ---
-        function renderQuestions() {
-            const container = document.getElementById('settings-questions-list');
-            if(!container) return;
+function renderQuestions() {
+    // กำหนด ID ของ container ที่คุณใช้แสดงรายการคำถาม
+    let container = document.getElementById('settings-questions-list'); 
+    if (!container) return;
+    
+    let html = '';
+    
+    if (currentSettingFormType === 'gt') {
+        // รูปแบบสำหรับ Guard Tour โครงสร้างใหม่แบบมีคำถามและคำตอบย่อย (เลือกได้หลายข้อ)
+        configGuardTourQuestions.forEach((q, qIdx) => {
+            html += `
+            <div class="bg-white p-4 border border-slate-200 rounded-lg mb-4 shadow-sm">
+                <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-2">
+                    <span class="text-sm font-bold text-slate-800">${qIdx + 1}. ${q.text}</span>
+                    <div class="space-x-2 shrink-0">
+                        <button onclick="editGTQuestion(${qIdx})" class="text-amber-500 hover:text-amber-600"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteGTQuestion(${qIdx})" class="text-rose-500 hover:text-rose-600"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+                <div class="pl-4 space-y-2">`;
+            
+            if (q.options && Array.isArray(q.options)) {
+                q.options.forEach((opt, optIdx) => {
+                    html += `
+                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+                        <span class="text-xs text-slate-600">- ${opt}</span>
+                        <div class="space-x-2">
+                            <button onclick="editGTOption(${qIdx}, ${optIdx})" class="text-amber-500 hover:text-amber-600"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteGTOption(${qIdx}, ${optIdx})" class="text-rose-500 hover:text-rose-600"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>`;
+                });
+            }
+            
+            html += `
+                    <button onclick="addGTOption(${qIdx})" class="mt-2 text-xs text-corporate font-semibold hover:underline"><i class="fa-solid fa-plus"></i> เพิ่มตัวเลือกคำตอบ</button>
+                </div>
+            </div>`;
+        });
+        html += `<button onclick="addGTQuestion()" class="mt-3 w-full py-2.5 bg-slate-50 text-slate-600 font-medium border border-slate-300 border-dashed rounded-lg text-xs hover:bg-slate-100 transition-colors btn-hover"><i class="fa-solid fa-plus mr-1"></i> เพิ่มหัวข้อ Guard Tour ใหม่</button>`;
+    } else {
+        // รูปแบบสำหรับ Stock Room (ข้อมูลเป็น Object ที่มี options)
+        configStockRoomQuestions.forEach((q, qIdx) => {
+            html += `
+            <div class="bg-white p-4 border border-slate-200 rounded-lg mb-4 shadow-sm">
+                <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-2">
+                    <span class="text-sm font-bold text-slate-800">${qIdx + 1}. ${q.text || q}</span>
+                    <div class="space-x-2 shrink-0">
+                        <button onclick="editStockRoomQuestion(${qIdx})" class="text-amber-500 hover:text-amber-600"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteStockRoomQuestion(${qIdx})" class="text-rose-500 hover:text-rose-600"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+                <div class="pl-4 space-y-2">`;
+            
+            // แสดงผลคำตอบย่อยแต่ละข้อ
+            if (q.options && Array.isArray(q.options)) {
+                q.options.forEach((opt, optIdx) => {
+                    html += `
+                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+                        <span class="text-xs text-slate-600">- ${opt}</span>
+                        <div class="space-x-2">
+                            <button onclick="editStockRoomOption(${qIdx}, ${optIdx})" class="text-amber-500 hover:text-amber-600"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteStockRoomOption(${qIdx}, ${optIdx})" class="text-rose-500 hover:text-rose-600"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>`;
+                });
+            }
+            
+            html += `
+                    <button onclick="addStockRoomOption(${qIdx})" class="mt-2 text-xs text-corporate font-semibold hover:underline"><i class="fa-solid fa-plus"></i> เพิ่มคำตอบย่อย</button>
+                </div>
+            </div>`;
+        });
+        html += `<button onclick="addStockRoomQuestion()" class="mt-3 w-full py-2.5 bg-slate-50 text-slate-600 font-medium border border-slate-300 border-dashed rounded-lg text-xs hover:bg-slate-100 transition-colors btn-hover"><i class="fa-solid fa-plus mr-1"></i> เพิ่มคำถามหัวข้อใหม่</button>`;
+    }
+    
+    container.innerHTML = html;
+}
 
-            let list = currentSettingFormType === 'gt' ? configGuardTourAnswers : configStockRoomQuestions;
-            
-            // กล่องเพิ่มคำถาม
-            let html = `<div class="flex space-x-2 mb-4">
-                <input type="text" id="new-question-input" placeholder="พิมพ์เพิ่มหัวข้อ/คำตอบ..." class="flex-grow px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-800 outline-none">
-                <button onclick="saveNewQuestion()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm"><i class="fa-solid fa-plus"></i></button>
-            </div><div class="space-y-2">`;
-            
-            // รายการคำถาม
-            list.forEach((q, idx) => {
-                html += `<div class="flex justify-between items-center p-3 bg-slate-50 border border-slate-200 rounded-lg shadow-sm">
-                    <span class="text-sm text-slate-700">${q}</span>
-                    <button onclick="deleteQuestion(${idx})" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash-can"></i></button>
-                </div>`;
+// ==========================================
+// 1. ฟังก์ชันจัดการ Guard Tour
+// ==========================================
+async function addGTQuestion() {
+    let val = await customPrompt("กรอกหัวข้อคำถาม Guard Tour ใหม่:");
+    if(val && val.trim()) {
+        configGuardTourQuestions.push({
+            id: Date.now(), 
+            text: val.trim(), 
+            options: ["เหตุการณ์ปกติ", "พบสิ่งผิดปกติ"] // สร้างตัวเลือกเริ่มต้นให้
+        });
+        renderQuestions();
+    }
+}
+
+async function editGTQuestion(qIdx) {
+    let oldVal = configGuardTourQuestions[qIdx].text;
+    let val = await customPrompt("แก้ไขหัวข้อคำถาม:", oldVal);
+    if(val && val.trim()) {
+        configGuardTourQuestions[qIdx].text = val.trim();
+        renderQuestions();
+    }
+}
+
+async function deleteGTQuestion(qIdx) {
+    let isConfirmed = await customConfirm("ต้องการลบหัวข้อคำถามนี้ใช่หรือไม่?");
+    if(isConfirmed) {
+        configGuardTourQuestions.splice(qIdx, 1);
+        renderQuestions();
+    }
+}
+
+async function addGTOption(qIdx) {
+    let val = await customPrompt("กรอกตัวเลือกคำตอบใหม่:");
+    if(val && val.trim()) {
+        if(!configGuardTourQuestions[qIdx].options) configGuardTourQuestions[qIdx].options = [];
+        configGuardTourQuestions[qIdx].options.push(val.trim());
+        renderQuestions();
+    }
+}
+
+async function editGTOption(qIdx, optIdx) {
+    let oldVal = configGuardTourQuestions[qIdx].options[optIdx];
+    let val = await customPrompt("แก้ไขตัวเลือกคำตอบ:", oldVal);
+    if(val && val.trim()) {
+        configGuardTourQuestions[qIdx].options[optIdx] = val.trim();
+        renderQuestions();
+    }
+}
+
+async function deleteGTOption(qIdx, optIdx) {
+    let isConfirmed = await customConfirm("ต้องการลบตัวเลือกนี้ใช่หรือไม่?");
+    if(isConfirmed) {
+        configGuardTourQuestions[qIdx].options.splice(optIdx, 1);
+        renderQuestions();
+    }
+}
+
+// ==========================================
+// 2. ฟังก์ชันจัดการคำถามหลัก (Stock Room)
+// ==========================================
+async function addStockRoomQuestion() {
+    let val = await customPrompt("กรอกคำถาม Stock Room ใหม่:");
+    if(val && val.trim()) {
+        configStockRoomQuestions.push({
+            id: Date.now(), 
+            text: val.trim(), 
+            options: ["ปลอดภัย", "ไม่ปลอดภัย"] // สร้างตัวเลือกย่อยเริ่มต้น
+        });
+        renderQuestions();
+    }
+}
+
+async function editStockRoomQuestion(qIdx) {
+    let oldVal = configStockRoomQuestions[qIdx].text || configStockRoomQuestions[qIdx];
+    let val = await customPrompt("แก้ไขคำถาม Stock Room:", oldVal);
+    if(val && val.trim()) {
+        if(typeof configStockRoomQuestions[qIdx] === 'object') {
+            configStockRoomQuestions[qIdx].text = val.trim();
+        } else {
+            configStockRoomQuestions[qIdx] = { id: Date.now(), text: val.trim(), options: ["ปลอดภัย", "ไม่ปลอดภัย"] };
+        }
+        renderQuestions();
+    }
+}
+
+async function deleteStockRoomQuestion(qIdx) {
+    let isConfirmed = await customConfirm("ต้องการลบคำถามนี้ใช่หรือไม่?");
+    if(isConfirmed) {
+        configStockRoomQuestions.splice(qIdx, 1);
+        renderQuestions();
+    }
+}
+
+// ==========================================
+// 3. ฟังก์ชันจัดการคำตอบย่อย (Stock Room)
+// ==========================================
+async function addStockRoomOption(qIdx) {
+    let val = await customPrompt("กรอกคำตอบย่อยใหม่:");
+    if(val && val.trim()) {
+        if(!configStockRoomQuestions[qIdx].options) configStockRoomQuestions[qIdx].options = [];
+        configStockRoomQuestions[qIdx].options.push(val.trim());
+        renderQuestions();
+    }
+}
+
+async function editStockRoomOption(qIdx, optIdx) {
+    let oldVal = configStockRoomQuestions[qIdx].options[optIdx];
+    let val = await customPrompt("แก้ไขคำตอบย่อย:", oldVal);
+    if(val && val.trim()) {
+        configStockRoomQuestions[qIdx].options[optIdx] = val.trim();
+        renderQuestions();
+    }
+}
+
+async function deleteStockRoomOption(qIdx, optIdx) {
+    let isConfirmed = await customConfirm("ต้องการลบคำตอบย่อยนี้ใช่หรือไม่?");
+    if(isConfirmed) {
+        configStockRoomQuestions[qIdx].options.splice(optIdx, 1);
+        renderQuestions();
+    }
+}
+
+// ==========================================
+// 4. ฟังก์ชันเสริม
+// ==========================================
+async function saveNewQuestion() {
+    if (currentSettingFormType === 'gt') {
+        let val = await customPrompt("กรอกตัวเลือกคำตอบ Guard Tour ใหม่:");
+        if (val && val.trim()) {
+            configGuardTourAnswers.push(val.trim());
+            renderQuestions();
+        }
+    } else {
+        let val = await customPrompt("กรอกคำถาม Stock Room ใหม่:");
+        if (val && val.trim()) {
+            configStockRoomQuestions.push({
+                id: Date.now(), 
+                text: val.trim(), 
+                options: ["ปลอดภัย", "ไม่ปลอดภัย"] 
             });
-            
-            container.innerHTML = html + `</div>`;
+            renderQuestions();
         }
-
-        function saveNewQuestion() {
-            let input = document.getElementById('new-question-input');
-            let val = input.value.trim();
-            if(val) {
-                if(currentSettingFormType === 'gt') configGuardTourAnswers.push(val);
-                else configStockRoomQuestions.push(val);
-                renderQuestions();
-            }
-        }
-
-        function deleteQuestion(idx) {
-            if(confirm("ต้องการลบรายการนี้ใช่หรือไม่?")) {
-                if(currentSettingFormType === 'gt') configGuardTourAnswers.splice(idx, 1);
-                else configStockRoomQuestions.splice(idx, 1);
-                renderQuestions();
-            }
-        }
+    }
+}
 
         // --- ส่วนจัดการ QR Code ---
-        function renderQRs() {
+function renderQRs() {
             const container = document.getElementById('qr-list-container');
             if(!container) return;
             
-            container.innerHTML = configQRs.map((q, idx) => `
-                <div class="flex justify-between items-center p-3 bg-white border border-slate-200 rounded-lg shadow-sm hover:border-corporate transition-colors">
-                    <div>
+            container.innerHTML = configQRs.map((q, idx) => {
+                let qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(q.code)}`;
+                return `
+                <div class="p-3 bg-white border border-slate-200 shadow-sm rounded-xl flex items-center space-x-3 transition-all hover:shadow-md hover:border-corporate group animate-fade-in">
+                    <img src="${qrImageUrl}" onclick="viewQRCode('${q.code}', '${q.name}', '${q.detail||''}')" class="w-[60px] h-[60px] rounded-lg border border-slate-100 p-1 bg-white shrink-0 object-contain shadow-sm cursor-pointer group-hover:scale-105 transition-transform" title="คลิกดูรูปเต็ม">
+                    <div class="flex-1 min-w-0">
                         <div class="font-bold text-sm text-slate-800">${q.code} <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-1">${q.type === 'guard_tour' ? 'GT' : 'SR'}</span></div>
                         <div class="text-xs text-slate-500 mt-0.5">${q.name}</div>
+                        <div class="text-[10px] text-slate-400 mt-0.5 truncate"><i class="fa-solid fa-location-dot mr-1"></i>${q.detail || '-'}</div>
                     </div>
-                    <button onclick="deleteQR(${idx})" class="text-slate-400 hover:text-rose-500 p-2"><i class="fa-solid fa-trash"></i></button>
+                    <div class="flex space-x-1 shrink-0 bg-slate-50 p-1 rounded-lg">
+                        <button onclick="viewQRCode('${q.code}', '${q.name}', '${q.detail||''}')" class="p-2 text-blue-500 hover:bg-blue-100 rounded-md text-xs transition-colors" title="ดูรูป"><i class="fa-solid fa-eye"></i></button>
+                        <button onclick="printQRCode('${q.code}', '${q.name}', '${q.detail||''}')" class="p-2 text-slate-600 hover:bg-slate-200 rounded-md text-xs transition-colors" title="พิมพ์"><i class="fa-solid fa-print"></i></button>
+                        <button onclick="openEditQRModal(${idx})" class="p-2 text-amber-500 hover:bg-amber-100 rounded-md text-xs transition-colors" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteQR(${idx})" class="p-2 text-rose-500 hover:bg-rose-100 rounded-md text-xs transition-colors" title="ลบ"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        function saveNewQRCode() {
+function saveNewQRCode() {
             let type = document.getElementById('qr-input-type').value;
             let code = document.getElementById('qr-input-code').value.trim().toUpperCase();
             let name = document.getElementById('qr-input-name').value.trim();
+            // ดึงค่าสถานที่ติดตั้งมาด้วย (ใน V2 ของเดิมลืมใส่ไว้)
+            let detail = document.getElementById('qr-input-detail') ? document.getElementById('qr-input-detail').value.trim() : "-";
             
             if(code && name) {
-                configQRs.push({ code: code, name: name, type: type, detail: "-" });
+                configQRs.push({ code: code, name: name, type: type, detail: detail });
                 closeModal('qr-create-modal');
                 renderQRs();
                 document.getElementById('qr-input-code').value = '';
                 document.getElementById('qr-input-name').value = '';
+                if(document.getElementById('qr-input-detail')) document.getElementById('qr-input-detail').value = '';
             } else {
                 showCustomAlert("กรุณากรอกรหัสและชื่อจุดตรวจให้ครบ", "warning");
             }
@@ -976,6 +1453,66 @@
                 configQRs.splice(idx, 1);
                 renderQRs();
             }
+        }
+        function openEditQRModal(idx) {
+            let qr = configQRs[idx];
+            document.getElementById('edit-qr-idx').value = idx;
+            document.getElementById('edit-qr-code').value = qr.code;
+            document.getElementById('edit-qr-name').value = qr.name;
+            document.getElementById('edit-qr-detail').value = qr.detail || '';
+            document.getElementById('qr-edit-modal').classList.remove('hidden');
+        }
+
+        function saveEditQRCode() {
+            let idx = document.getElementById('edit-qr-idx').value;
+            let n = document.getElementById('edit-qr-name').value.trim();
+            let d = document.getElementById('edit-qr-detail').value.trim();
+            
+            if(!n) { showCustomAlert('กรุณากรอกชื่อจุดตรวจ', 'warning'); return; }
+            
+            configQRs[idx].name = n;
+            configQRs[idx].detail = d;
+            closeModal('qr-edit-modal');
+            renderQRs();
+        }
+
+        function viewQRCode(code, name, detail) {
+            document.getElementById('view-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(code)}`;
+            document.getElementById('view-qr-title').innerText = name;
+            document.getElementById('view-qr-detail').innerText = "📍 สถานที่: " + (detail || 'ไม่ได้ระบุ') + "\nID: " + code;
+            document.getElementById('qr-view-modal').classList.remove('hidden');
+        }
+
+        function printQRCode(code, name, detail) {
+            let qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(code)}`;
+            let printWindow = window.open('', '_blank', 'width=500,height=600');
+            printWindow.document.write(`
+                <html lang="th">
+                <head>
+                    <title>Print QR Code - ${code}</title>
+                    <style>
+                        body { font-family: sans-serif; text-align: center; padding: 40px 20px; background: #fff; }
+                        .card { border: 4px solid #0f172a; padding: 35px; border-radius: 24px; display: inline-block; max-width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+                        h1 { margin: 0 0 5px 0; font-size: 32px; color: #0f172a; text-transform: uppercase; font-weight: 900; }
+                        p.sub { font-size: 16px; color: #f97316; margin: 0 0 25px 0; font-weight: bold; }
+                        img { max-width: 280px; border: 12px solid #fff; outline: 3px solid #e2e8f0; border-radius: 16px; margin-bottom: 25px; }
+                        h2 { margin: 0; font-size: 26px; color: #1e293b; background: #f8fafc; padding: 12px 20px; border-radius: 12px; border: 2px dashed #cbd5e1; display: inline-block; }
+                        p.detail { font-size: 18px; color: #475569; margin-top: 20px; font-weight: 500; }
+                        @media print { body { padding: 0; } .card { box-shadow: none; border-color: #000; } }
+                    </style>
+                </head>
+                <body onload="setTimeout(function(){ window.print(); window.close(); }, 500);">
+                    <div class="card">
+                        <h1>QR SAFETY PATROL</h1>
+                        <p class="sub">SCAN FOR INSPECTION</p>
+                        <img src="${qrImageUrl}" alt="QR Code">
+                        <h2>${name}</h2>
+                        <p class="detail"><strong>ID:</strong> ${code}<br>${detail && detail !== '-' ? '<strong>📍 Location:</strong> ' + detail : ''}</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
         }
 
         // --- ส่วนจัดการผู้ใช้งาน (Users) ---
@@ -1075,6 +1612,140 @@ function switchSettingsTab(tabId) {
         document.getElementById('tab-users').classList.add('border-corporate', 'text-corporate');
     }
 }
+// ==========================================
+// ฟังก์ชันสำหรับ Modal แก้ไขผลการตรวจ (หน้า Dashboard)
+// ==========================================
+let currentEditData = {}; // ตัวแปรเก็บสถานะการแก้ไขชั่วคราว
+
+// 1. เปิด Modal 
+function openEditRecordModal(logId, date, shiftId, type) {
+    currentEditData = { logId, date, shiftId, type };
+    
+    let shiftObj = configShifts.find(s => s.id === shiftId);
+    let titleType = type === 'guard_tour' ? 'Guard Tour' : 'Stock Room';
+    
+    document.getElementById('edit-location-display').textContent = `${titleType} (รอบ: ${shiftObj.name.split(' ')[0]})`;
+    
+    const dateObj = new Date(date);
+    const thaiDate = dateObj.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+    document.getElementById('edit-date-display').textContent = thaiDate;
+
+    // ค้นหาข้อมูลเดิม (ถ้ามี)
+    let log = logId ? submissionLogs.find(l => l.id === logId) : null;
+
+    if (log) {
+        // ดึงเวลาออกมาจาก timestamp ดั้งเดิม (เช่น "12/8/2566, 15:30:00" -> "15:30")
+        let timeMatch = log.timestamp.match(/(\d{2}:\d{2})/);
+        document.getElementById('edit-time').value = timeMatch ? timeMatch[1] : '00:00';
+
+        if (log.summary.includes('พบสิ่งผิดปกติ') || log.summary.includes('พบปัญหา') || log.summary.includes('ข้อ')) {
+            document.getElementById('edit-status').value = 'ผิดปกติ';
+            document.getElementById('edit-issue').value = log.summary;
+        } else {
+            document.getElementById('edit-status').value = 'ปกติ';
+            document.getElementById('edit-issue').value = '';
+        }
+    } else {
+        // กรณีช่องว่าง (ลงผลย้อนหลัง)
+        document.getElementById('edit-time').value = '';
+        document.getElementById('edit-status').value = 'ปกติ';
+        document.getElementById('edit-issue').value = '';
+    }
+
+    toggleEditIssue();
+
+    const modal = document.getElementById('edit-record-modal');
+    const modalContent = document.getElementById('edit-record-modal-content');
+    modal.classList.remove('hidden');
+    
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modalContent.classList.remove('scale-95');
+    }, 10);
+}
+
+// 2. ปิด Modal
+function closeEditRecordModal() {
+    const modal = document.getElementById('edit-record-modal');
+    const modalContent = document.getElementById('edit-record-modal-content');
+    
+    modal.classList.add('opacity-0');
+    modalContent.classList.add('scale-95');
+    
+    setTimeout(() => { modal.classList.add('hidden'); }, 300); 
+}
+
+// 3. เปิด/ปิด กล่องรายละเอียดปัญหา
+function toggleEditIssue() {
+    const status = document.getElementById('edit-status').value;
+    const container = document.getElementById('edit-issue-container');
+    
+    if (status === 'ผิดปกติ') {
+        container.classList.remove('hidden');
+        document.getElementById('edit-status').classList.remove('text-green-600');
+        document.getElementById('edit-status').classList.add('text-red-600');
+    } else {
+        container.classList.add('hidden');
+        document.getElementById('edit-status').classList.remove('text-red-600');
+        document.getElementById('edit-status').classList.add('text-green-600');
+    }
+}
+
+// 4. บันทึกข้อมูล
+async function saveEditedRecord() {
+    const newTime = document.getElementById('edit-time').value;
+    const newStatus = document.getElementById('edit-status').value;
+    const newIssue = document.getElementById('edit-issue').value;
+
+    if (!newTime) {
+        showCustomAlert('กรุณาระบุเวลาที่ตรวจ', 'warning');
+        return;
+    }
+    if (newStatus === 'ผิดปกติ' && !newIssue.trim()) {
+        showCustomAlert('กรุณาระบุรายละเอียดปัญหาที่พบเจอ', 'warning');
+        return;
+    }
+
+    // กำหนดข้อความสรุปผล
+    let summaryStr = newStatus === 'ปกติ' ? 'เหตุการณ์ปกติ' : newIssue;
+    if (currentEditData.type === 'stock_room' && newStatus === 'ปกติ') {
+        summaryStr = 'ตรวจสอบแล้วปกติทุกหัวข้อ';
+    }
+
+    // สร้าง timestamp ใหม่
+    let timestampStr = `${currentEditData.date} ${newTime}:00`;
+
+    if (currentEditData.logId) {
+        // อัปเดตข้อมูลเดิม
+        let logIndex = submissionLogs.findIndex(l => l.id === currentEditData.logId);
+        if (logIndex !== -1) {
+            submissionLogs[logIndex].timestamp = timestampStr;
+            submissionLogs[logIndex].summary = summaryStr;
+            submissionLogs[logIndex].inspector += " (Edited)";
+            
+            // หมายเหตุ: หาก Backend (GAS) ของคุณมีระบบอัปเดตข้อมูล สามารถยิง API ตรงนี้ได้
+            // await fetchGAS("updateLog", submissionLogs[logIndex]);
+        }
+    } else {
+        // สร้างข้อมูลใหม่ (บันทึกย้อนหลัง)
+        let newLog = {
+            id: Math.random().toString(36).substr(2, 9),
+            timestamp: timestampStr,
+            businessDate: currentEditData.date,
+            type: currentEditData.type,
+            inspector: (loggedInUser ? loggedInUser.username : 'Admin') + " (Added)",
+            shiftId: currentEditData.shiftId,
+            summary: summaryStr
+        };
+        submissionLogs.unshift(newLog); // นำไปไว้บนสุด
+        await fetchGAS("saveLog", newLog); // ส่งเข้า Google Sheets
+    }
+
+    closeEditRecordModal();
+    showCustomAlert('บันทึกการแก้ไขสำเร็จ!', 'success');
+    refreshDashboard(); // โหลดตารางใหม่
+}
+
     </script>
 </body>
 </html>
