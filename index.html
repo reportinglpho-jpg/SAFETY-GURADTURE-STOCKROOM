@@ -914,110 +914,111 @@ async function handleFormSubmit(e) {
         }
 
         function renderFrequencyTable(type, targetTbody, targetThead) {
-            const body = document.getElementById(targetTbody);
-            const head = document.getElementById(targetThead);
-            body.innerHTML = ''; head.innerHTML = '';
-            
-            let filterVal = document.getElementById('filter-month-year').value; 
-            if(!filterVal) return;
-            let [targetYearStr, filterMonth] = filterVal.split('-');
-            let daysInMonth = new Date(parseInt(targetYearStr), parseInt(filterMonth), 0).getDate();
-            
-            let trHead = `<tr class="bg-slate-100 text-slate-700 text-[10px]">
-                <th class="p-2 border border-slate-200 sticky left-0 bg-slate-100 z-10 w-24 shadow-sm">รอบ / วันที่</th>`;
-            for(let d=1; d<=daysInMonth; d++) { trHead += `<th class="p-1 border border-slate-200 text-center min-w-[20px] w-6">${d}</th>`;
-            }
-            trHead += `<th class="p-1 border border-slate-200 text-center w-12 text-emerald-700 shadow-sm">รวมตรวจ</th>
-                       <th class="p-1 border border-slate-200 text-center w-12 text-blue-700 shadow-sm">%</th></tr>`;
-            head.innerHTML = trHead;
+    const body = document.getElementById(targetTbody);
+    const head = document.getElementById(targetThead);
+    body.innerHTML = ''; head.innerHTML = '';
+    
+    let filterVal = document.getElementById('filter-month-year').value; 
+    if(!filterVal) return;
+    let [targetYearStr, filterMonth] = filterVal.split('-');
+    let daysInMonth = new Date(parseInt(targetYearStr), parseInt(filterMonth), 0).getDate();
+    
+    let trHead = `<tr class="bg-slate-100 text-slate-700 text-[10px]">
+        <th class="p-2 border border-slate-200 sticky left-0 bg-slate-100 z-10 w-24 shadow-sm">รอบ / วันที่</th>`;
+    for(let d=1; d<=daysInMonth; d++) { trHead += `<th class="p-1 border border-slate-200 text-center min-w-[20px] w-6">${d}</th>`;
+    }
+    trHead += `<th class="p-1 border border-slate-200 text-center w-12 text-emerald-700 shadow-sm">รวมตรวจ</th>
+               <th class="p-1 border border-slate-200 text-center w-12 text-blue-700 shadow-sm">%</th></tr>`;
+    head.innerHTML = trHead;
 
-            let actualNow = new Date();
-            let canEdit = loggedInUser && loggedInUser.canEditDashboard;
-            
-            configShifts.forEach(shift => {
-                let tr = `<tr class="hover:bg-slate-50 transition-colors">
-                    <td class="p-2 border border-slate-100 font-bold text-slate-600 bg-white sticky left-0 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] text-[10px] whitespace-nowrap">${shift.name}</td>`;
-                let countChecked = 0; let totalPastDays = 0;
+    let actualNow = new Date();
+    let canEdit = loggedInUser && loggedInUser.canEditDashboard;
+    
+    configShifts.forEach(shift => {
+        let tr = `<tr class="hover:bg-slate-50 transition-colors">
+            <td class="p-2 border border-slate-100 font-bold text-slate-600 bg-white sticky left-0 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] text-[10px] whitespace-nowrap">${shift.name}</td>`;
+        let countChecked = 0; let totalPastDays = 0;
 
-                for (let d = 1; d <= daysInMonth; d++) {
-                    let dateStr = `${targetYearStr}-${filterMonth}-${String(d).padStart(2, '0')}`;
-                    
-                    // --- [ส่วนที่ถูกแก้ไข]: ลอจิกเปรียบเทียบวันที่แบบใหม่ ---
-                    let logFound = submissionLogs.find(l => {
-                        let bDate = String(l.businessDate).trim();
-                        // 1. กรณีมาจาก Sheet แล้วติด Timezone (เช่น 2026-06-28T17:00:00.000Z)
-                        if (bDate.includes('T')) {
-                            let dObj = new Date(bDate);
-                            bDate = dObj.getFullYear() + '-' + 
-                                    String(dObj.getMonth() + 1).padStart(2, '0') + '-' + 
-                                    String(dObj.getDate()).padStart(2, '0');
-                        } 
-                        // 2. กรณี Sheet ส่งกลับมาเป็น DD/MM/YYYY
-                        else if (bDate.includes('/')) {
-                            let parts = bDate.split(' ')[0].split('/'); 
-                            if(parts.length === 3 && parts[2].length === 4) {
-                                bDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-                            }
-                        } 
-                        // 3. กรณีเป็นข้อความ YYYY-MM-DD ปกติอยู่แล้ว
-                        else {
-                            bDate = bDate.substring(0, 10);
-                        }
-                        
-                        return bDate === dateStr && String(l.shiftId).trim() === String(shift.id) && String(l.type).trim() === String(type);
-                    });
-                    // --- [สิ้นสุดส่วนที่ถูกแก้ไข] ---
-                    
-                    // คำนวณช่วงเวลาของการตรวจ (รวมกะดึก)
-                    let loopDate = new Date(parseInt(targetYearStr), parseInt(filterMonth) - 1, d);
-                    let shiftEndObj = new Date(loopDate);
-                    
-                    if(shift.id === 'n1' || shift.id === 'n2') {
-                        // กะดึกจะนับว่าสิ้นสุดในวันถัดไปตามเวลา
-                        shiftEndObj.setDate(shiftEndObj.getDate() + 1);
+        // ลูปวาดช่องตารางของแต่ละวันใน 1 เดือน
+        for (let d = 1; d <= daysInMonth; d++) {
+            let dateStr = `${targetYearStr}-${filterMonth}-${String(d).padStart(2, '0')}`;
+            
+            // --- [ส่วนที่ถูกแก้ไข]: ลอจิกเปรียบเทียบวันที่แบบใหม่ ---
+            let logFound = submissionLogs.find(l => {
+                let bDate = String(l.businessDate).trim();
+                // 1. กรณีมาจาก Sheet แล้วติด Timezone (เช่น 2026-06-28T17:00:00.000Z)
+                if (bDate.includes('T')) {
+                    let dObj = new Date(bDate);
+                    bDate = dObj.getFullYear() + '-' + 
+                            String(dObj.getMonth() + 1).padStart(2, '0') + '-' + 
+                            String(dObj.getDate()).padStart(2, '0');
+                } 
+                // 2. กรณี Sheet ส่งกลับมาเป็น DD/MM/YYYY
+                else if (bDate.includes('/')) {
+                    let parts = bDate.split(' ')[0].split('/'); 
+                    if(parts.length === 3 && parts[2].length === 4) {
+                        bDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
                     }
-                    shiftEndObj.setHours(shift.end, 0, 0, 0);
-                    // หากเวลาปัจจุบัน เลย เวลาสิ้นสุดรอบนั้น ๆ แล้ว
-                    let isShiftEnded = actualNow > shiftEndObj;
-                    if(isShiftEnded) totalPastDays++;
-                    
-                    let cellClass = `p-1 border border-slate-100 text-center text-[10px] shadow-inner transition-colors`;
-                    if (logFound) {
-                        // เพิ่มเช็คสถานะว่าเป็นการตรวจปกติ หรือระบุว่า "ไม่มีการตรวจ" (เพื่อแก้ปัญหาข้อ 2 ไปด้วย)
-                        let isNotInspected = logFound.summary.includes('ไม่มีการตรวจ');
-
-                        if (!isNotInspected) {
-                            countChecked++; // นับเสมอเมื่อมีการตรวจสำเร็จ
-                            if (!isShiftEnded) totalPastDays++; // ถ้าตรวจล่วงหน้าก่อนหมดเวลา ให้นับเป็นฐาน(ตัวหาร)ด้วย % จะได้ไม่เกิน
-                            
-                            let clickAction = canEdit ?
-                            `onclick="openEditRecordModal('${logFound.id}', '${dateStr}', '${shift.id}', '${type}')" class="cursor-pointer hover:bg-emerald-100 ${cellClass} text-emerald-500 bg-emerald-50/70"` : `class="${cellClass} text-emerald-500 bg-emerald-50/70"`;
-                            tr += `<td ${clickAction} title="${canEdit ? 'คลิกเพื่อแก้ไขข้อมูล' : 'ตรวจแล้ว'}"><i class="fa-solid fa-check"></i></td>`;
-                        } else {
-                            if (!isShiftEnded) totalPastDays++; // ถึงไม่ตรวจแต่กดยืนยันแล้ว ก็ต้องนับเป็นฐาน
-                            // แสดงเป็นกากบาทแทน
-                            let clickAction = canEdit ?
-                            `onclick="openEditRecordModal('${logFound.id}', '${dateStr}', '${shift.id}', '${type}')" class="cursor-pointer hover:bg-rose-100 ${cellClass} text-rose-500 bg-rose-50/70"` : `class="${cellClass} text-rose-500 bg-rose-50/70"`;
-                            tr += `<td ${clickAction} title="${canEdit ? 'คลิกเพื่อแก้ไขข้อมูล' : 'ไม่มีการตรวจ'}"><i class="fa-solid fa-xmark"></i></td>`;
-                            }
-                    } else {
-                        // เพิ่มส่วนนี้: สร้างช่องว่างสำหรับวันที่ไม่มีการตรวจ
-                        let clickAction = canEdit ?
-                        `onclick="openEditRecordModal('', '${dateStr}', '${shift.id}', '${type}')" class="cursor-pointer hover:bg-slate-200 ${cellClass} bg-white"` : `class="${cellClass} bg-white"`;
-                        
-                        // ใช้เครื่องหมายขีด (-) เพื่อให้ดูรู้ว่าเป็นช่องว่าง
-                        tr += `<td ${clickAction} title="${canEdit ? 'คลิกเพื่อเพิ่มข้อมูลย้อนหลัง' : 'ไม่มีข้อมูล'}">-</td>`;
-                    }
-            }
-        } 
-    } 
-                let percent = totalPastDays > 0 ?
-                Math.min(100, Math.round((countChecked / totalPastDays) * 100)) : 0;
-                tr += `<td class="p-1 border border-slate-100 text-center font-extrabold text-emerald-700 bg-emerald-50/30 text-[11px]">${countChecked}</td>`;
-                tr += `<td class="p-1 border border-slate-100 text-center font-extrabold text-blue-700 bg-blue-50/30 text-[11px]">${percent}%</td></tr>`;
-                body.insertAdjacentHTML('beforeend', tr);
+                } 
+                // 3. กรณีเป็นข้อความ YYYY-MM-DD ปกติอยู่แล้ว
+                else {
+                    bDate = bDate.substring(0, 10);
+                }
+                
+                return bDate === dateStr && String(l.shiftId).trim() === String(shift.id) && String(l.type).trim() === String(type);
             });
-        }
+            // --- [สิ้นสุดส่วนที่ถูกแก้ไข] ---
+            
+            // คำนวณช่วงเวลาของการตรวจ (รวมกะดึก)
+            let loopDate = new Date(parseInt(targetYearStr), parseInt(filterMonth) - 1, d);
+            let shiftEndObj = new Date(loopDate);
+            
+            if(shift.id === 'n1' || shift.id === 'n2') {
+                // กะดึกจะนับว่าสิ้นสุดในวันถัดไปตามเวลา
+                shiftEndObj.setDate(shiftEndObj.getDate() + 1);
+            }
+            shiftEndObj.setHours(shift.end, 0, 0, 0);
+            // หากเวลาปัจจุบัน เลย เวลาสิ้นสุดรอบนั้น ๆ แล้ว
+            let isShiftEnded = actualNow > shiftEndObj;
+            if(isShiftEnded) totalPastDays++;
+            
+            let cellClass = `p-1 border border-slate-100 text-center text-[10px] shadow-inner transition-colors`;
+            if (logFound) {
+                // เพิ่มเช็คสถานะว่าเป็นการตรวจปกติ หรือระบุว่า "ไม่มีการตรวจ"
+                let isNotInspected = logFound.summary.includes('ไม่มีการตรวจ');
+
+                if (!isNotInspected) {
+                    countChecked++; // นับเสมอเมื่อมีการตรวจสำเร็จ
+                    if (!isShiftEnded) totalPastDays++; // ถ้าตรวจล่วงหน้าก่อนหมดเวลา ให้นับเป็นฐาน(ตัวหาร)ด้วย % จะได้ไม่เกิน
+                    
+                    let clickAction = canEdit ?
+                    `onclick="openEditRecordModal('${logFound.id}', '${dateStr}', '${shift.id}', '${type}')" class="cursor-pointer hover:bg-emerald-100 ${cellClass} text-emerald-500 bg-emerald-50/70"` : `class="${cellClass} text-emerald-500 bg-emerald-50/70"`;
+                    tr += `<td ${clickAction} title="${canEdit ? 'คลิกเพื่อแก้ไขข้อมูล' : 'ตรวจแล้ว'}"><i class="fa-solid fa-check"></i></td>`;
+                } else {
+                    if (!isShiftEnded) totalPastDays++; // ถึงไม่ตรวจแต่กดยืนยันแล้ว ก็ต้องนับเป็นฐาน
+                    // แสดงเป็นกากบาทแทน
+                    let clickAction = canEdit ?
+                    `onclick="openEditRecordModal('${logFound.id}', '${dateStr}', '${shift.id}', '${type}')" class="cursor-pointer hover:bg-rose-100 ${cellClass} text-rose-500 bg-rose-50/70"` : `class="${cellClass} text-rose-500 bg-rose-50/70"`;
+                    tr += `<td ${clickAction} title="${canEdit ? 'คลิกเพื่อแก้ไขข้อมูล' : 'ไม่มีการตรวจ'}"><i class="fa-solid fa-xmark"></i></td>`;
+                }
+            } else {
+                // สร้างช่องว่างสำหรับวันที่ไม่มีการตรวจ
+                let clickAction = canEdit ?
+                `onclick="openEditRecordModal('', '${dateStr}', '${shift.id}', '${type}')" class="cursor-pointer hover:bg-slate-200 ${cellClass} bg-white"` : `class="${cellClass} bg-white"`;
+                
+                // ใช้เครื่องหมายขีด (-) เพื่อให้ดูรู้ว่าเป็นช่องว่าง
+                tr += `<td ${clickAction} title="${canEdit ? 'คลิกเพื่อเพิ่มข้อมูลย้อนหลัง' : 'ไม่มีข้อมูล'}">-</td>`;
+            }
+        } // ปิดลูป for (let d = 1; d <= daysInMonth; d++)
+
+        // ส่วนคำนวณเปอร์เซ็นต์และปิดแถว จะต้องอยู่หลังลูป for แต่ยังอยู่ใน configShifts.forEach
+        let percent = totalPastDays > 0 ?
+        Math.min(100, Math.round((countChecked / totalPastDays) * 100)) : 0;
+        tr += `<td class="p-1 border border-slate-100 text-center font-extrabold text-emerald-700 bg-emerald-50/30 text-[11px]">${countChecked}</td>`;
+        tr += `<td class="p-1 border border-slate-100 text-center font-extrabold text-blue-700 bg-blue-50/30 text-[11px]">${percent}%</td></tr>`;
+        body.insertAdjacentHTML('beforeend', tr);
+    });
+}
 
         function renderRecentLogs() {
             const body = document.getElementById('recent-logs-body');
