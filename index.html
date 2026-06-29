@@ -1008,8 +1008,6 @@ async function handleFormSubmit(e) {
                         // ใช้เครื่องหมายขีด (-) เพื่อให้ดูรู้ว่าเป็นช่องว่าง
                         tr += `<td ${clickAction} title="${canEdit ? 'คลิกเพื่อเพิ่มข้อมูลย้อนหลัง' : 'ไม่มีข้อมูล'}">-</td>`;
                     }
-                    }
-                }
                 
                 let percent = totalPastDays > 0 ?
                 Math.min(100, Math.round((countChecked / totalPastDays) * 100)) : 0;
