@@ -983,18 +983,24 @@ async function handleFormSubmit(e) {
                     
                     let cellClass = `p-1 border border-slate-100 text-center text-[10px] shadow-inner transition-colors`;
                     if (logFound) {
-                        if(isShiftEnded) countChecked++;
-                        // เพิ่ม onclick หากมีสิทธิ์แก้ไข
-                        let clickAction = canEdit ?
-                        `onclick="openEditRecordModal('${logFound.id}', '${dateStr}', '${shift.id}', '${type}')" class="cursor-pointer hover:bg-emerald-100 ${cellClass} text-emerald-500 bg-emerald-50/70"` : `class="${cellClass} text-emerald-500 bg-emerald-50/70"`;
-                        tr += `<td ${clickAction} title="${canEdit ? 'คลิกเพื่อแก้ไขข้อมูล' : 'ตรวจแล้ว'}"><i class="fa-solid fa-check"></i></td>`;
-                    } else {
-                        if (isShiftEnded) { 
-                            // เพิ่ม onclick เพื่อให้กรอกย้อนหลังได้
+                        // เพิ่มเช็คสถานะว่าเป็นการตรวจปกติ หรือระบุว่า "ไม่มีการตรวจ" (เพื่อแก้ปัญหาข้อ 2 ไปด้วย)
+                        let isNotInspected = logFound.summary.includes('ไม่มีการตรวจ');
+
+                        if (!isNotInspected) {
+                            countChecked++; // นับเสมอเมื่อมีการตรวจสำเร็จ
+                            if (!isShiftEnded) totalPastDays++; // ถ้าตรวจล่วงหน้าก่อนหมดเวลา ให้นับเป็นฐาน(ตัวหาร)ด้วย % จะได้ไม่เกิน
+                            
                             let clickAction = canEdit ?
-                            `onclick="openEditRecordModal(null, '${dateStr}', '${shift.id}', '${type}')" class="cursor-pointer hover:bg-rose-100 ${cellClass} text-rose-500 bg-rose-50/70"` : `class="${cellClass} text-rose-500 bg-rose-50/70"`;
-                            tr += `<td ${clickAction} title="${canEdit ? 'คลิกเพื่อลงผลย้อนหลัง' : 'ไม่พบผลตรวจ'}"><i class="fa-solid fa-xmark"></i></td>`;
-                        } else { 
+                            `onclick="openEditRecordModal('${logFound.id}', '${dateStr}', '${shift.id}', '${type}')" class="cursor-pointer hover:bg-emerald-100 ${cellClass} text-emerald-500 bg-emerald-50/70"` : `class="${cellClass} text-emerald-500 bg-emerald-50/70"`;
+                            tr += `<td ${clickAction} title="${canEdit ? 'คลิกเพื่อแก้ไขข้อมูล' : 'ตรวจแล้ว'}"><i class="fa-solid fa-check"></i></td>`;
+                        } else {
+                            if (!isShiftEnded) totalPastDays++; // ถึงไม่ตรวจแต่กดยืนยันแล้ว ก็ต้องนับเป็นฐาน
+                            // แสดงเป็นกากบาทแทน
+                            let clickAction = canEdit ?
+                            `onclick="openEditRecordModal('${logFound.id}', '${dateStr}', '${shift.id}', '${type}')" class="cursor-pointer hover:bg-rose-100 ${cellClass} text-rose-500 bg-rose-50/70"` : `class="${cellClass} text-rose-500 bg-rose-50/70"`;
+                            tr += `<td ${clickAction} title="${canEdit ? 'คลิกเพื่อแก้ไขข้อมูล' : 'ไม่มีการตรวจ'}"><i class="fa-solid fa-xmark"></i></td>`;
+                        }
+                    } else {
                             // หากรอบการตรวจยังไม่หมดเวลา ให้ใส่ขีด -
                             tr += `<td class="${cellClass} text-slate-400 font-bold bg-slate-50/50" title="ยังไม่หมดเวลา">-</td>`;
                         }
@@ -1749,7 +1755,9 @@ async function saveEditedRecord() {
     saveBtn.classList.add('opacity-75', 'cursor-not-allowed');
     // --------------------------------------------------------
 
-    let summaryStr = newStatus === 'มีการตรวจ' ? 'เหตุการณ์ปกติ' : newIssue;
+    // บังคับแนบคำว่า "ไม่มีการตรวจ" เข้าไปในฐานข้อมูล เพื่อให้ Table อ่านแล้วเปลี่ยนเป็นกากบาท
+    let summaryStr = newStatus === 'มีการตรวจ' ? 'เหตุการณ์ปกติ' : `ไม่มีการตรวจ: ${newIssue}`;
+    
     if (currentEditData.type === 'stock_room' && newStatus === 'มีการตรวจ') {
         summaryStr = 'ตรวจสอบแล้วปกติทุกหัวข้อ';
     }
