@@ -552,10 +552,6 @@
         function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); document.getElementById('global-loader').classList.remove('flex'); }
 
         async function fetchGAS(action, data = null) {
-            if(WEB_APP_URL === "https://script.google.com/macros/s/AKfycbzkX7mbYVnHZY4RKRoDb47aygETtJWJ8wDa64q4M-Z3OI7gdHvJ612jZrV6d0PFJx8k/exec") {
-                console.warn("https://script.google.com/macros/s/AKfycbzkX7mbYVnHZY4RKRoDb47aygETtJWJ8wDa64q4M-Z3OI7gdHvJ612jZrV6d0PFJx8k/exec");
-                return null;
-            }
             try {
                 let res = await fetch(WEB_APP_URL, {
                     method: 'POST',
