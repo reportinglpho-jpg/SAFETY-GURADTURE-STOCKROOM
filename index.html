@@ -479,9 +479,9 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">สถานะ <span class="text-red-500">*</span></label>
                         <select id="edit-status" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-corporate focus:border-corporate text-sm font-medium" onchange="toggleEditIssue()">
-                            <option value="ปกติ" class="text-green-600">ปกติ</option>
-                            <option value="ผิดปกติ" class="text-red-600">ผิดปกติ</option>
-                        </select>
+                        <option value="มีการตรวจ" class="text-green-600">มีการตรวจ</option>
+                        <option value="ไม่มีการตรวจ" class="text-red-600">ไม่มีการตรวจ</option>
+                  </select>
                     </div>
                 </div>
 
@@ -1638,17 +1638,17 @@ function openEditRecordModal(logId, date, shiftId, type) {
         let timeMatch = log.timestamp.match(/(\d{2}:\d{2})/);
         document.getElementById('edit-time').value = timeMatch ? timeMatch[1] : '00:00';
 
-        if (log.summary.includes('พบสิ่งผิดปกติ') || log.summary.includes('พบปัญหา') || log.summary.includes('ข้อ')) {
-            document.getElementById('edit-status').value = 'ผิดปกติ';
+        if (log.summary.includes('พบสิ่งผิดปกติ') || log.summary.includes('พบปัญหา') || log.summary.includes('ข้อ') || log.summary.includes('ไม่มีการตรวจ')) {
+            document.getElementById('edit-status').value = 'ไม่มีการตรวจ';
             document.getElementById('edit-issue').value = log.summary;
         } else {
-            document.getElementById('edit-status').value = 'ปกติ';
+            document.getElementById('edit-status').value = 'มีการตรวจ';
             document.getElementById('edit-issue').value = '';
         }
     } else {
         // กรณีช่องว่าง (ลงผลย้อนหลัง)
         document.getElementById('edit-time').value = '';
-        document.getElementById('edit-status').value = 'ปกติ';
+        document.getElementById('edit-status').value = 'มีการตรวจ';
         document.getElementById('edit-issue').value = '';
     }
 
@@ -1680,7 +1680,7 @@ function toggleEditIssue() {
     const status = document.getElementById('edit-status').value;
     const container = document.getElementById('edit-issue-container');
     
-    if (status === 'ผิดปกติ') {
+    if (status === 'ไม่มีการตรวจ') {
         container.classList.remove('hidden');
         document.getElementById('edit-status').classList.remove('text-green-600');
         document.getElementById('edit-status').classList.add('text-red-600');
@@ -1701,14 +1701,14 @@ async function saveEditedRecord() {
         showCustomAlert('กรุณาระบุเวลาที่ตรวจ', 'warning');
         return;
     }
-    if (newStatus === 'ผิดปกติ' && !newIssue.trim()) {
-        showCustomAlert('กรุณาระบุรายละเอียดปัญหาที่พบเจอ', 'warning');
+    if (newStatus === 'ไม่มีการตรวจ' && !newIssue.trim()) {
+        showCustomAlert('กรุณาระบุเหตุผลที่ไม่มีการตรวจ', 'warning');
         return;
     }
 
     // กำหนดข้อความสรุปผล
-    let summaryStr = newStatus === 'ปกติ' ? 'เหตุการณ์ปกติ' : newIssue;
-    if (currentEditData.type === 'stock_room' && newStatus === 'ปกติ') {
+    let summaryStr = newStatus === 'มีการตรวจ' ? 'เหตุการณ์ปกติ' : newIssue;
+    if (currentEditData.type === 'stock_room' && newStatus === 'มีการตรวจ') {
         summaryStr = 'ตรวจสอบแล้วปกติทุกหัวข้อ';
     }
 
